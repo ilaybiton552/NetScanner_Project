@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" modified="2023-10-25T14:53:44.230Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36" etag="ynEzgZ_8ayfBM6pgQGbJ" version="21.5.2" type="device">
+  <diagram name="Страница 1" id="a60rZNQnVVXeOTNM7F6i">
+    <mxGraphModel dx="1507" dy="608" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-1" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="210" y="30" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-2" value="Scanning device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="295" y="30" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-3" value="Logic" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="70" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-4" value="Communication with server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="70" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-5" value="scans" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="160" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-6" value="Communication with client" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="160" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-7" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-5" target="3DI-tEo_D6uw-kGYM53E-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="260" as="sourcePoint" />
+            <mxPoint x="500" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-8" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-6" target="3DI-tEo_D6uw-kGYM53E-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="290" as="sourcePoint" />
+            <mxPoint x="500" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-9" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-4" target="3DI-tEo_D6uw-kGYM53E-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="260" as="sourcePoint" />
+            <mxPoint x="500" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-11" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="30" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-12" value="Server" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="670" y="30" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-13" value="Logic" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="70" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-14" value="DB wrapper" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="160" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-15" value="Communication with SMTP server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="160" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-16" value="Communication with scanning device" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="70" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-17" value="" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-16" target="3DI-tEo_D6uw-kGYM53E-13">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="460" y="310" as="sourcePoint" />
+            <mxPoint x="510" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-18" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-14" target="3DI-tEo_D6uw-kGYM53E-13">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="420" as="sourcePoint" />
+            <mxPoint x="620" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-19" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-4" target="3DI-tEo_D6uw-kGYM53E-16">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="260" as="sourcePoint" />
+            <mxPoint x="500" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-20" value="Google&lt;br&gt;SMTP server" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="575" y="280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-21" value="&lt;br&gt;Database" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="745" y="280" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-22" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-21" target="3DI-tEo_D6uw-kGYM53E-14">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="260" as="sourcePoint" />
+            <mxPoint x="500" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-23" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-20" target="3DI-tEo_D6uw-kGYM53E-15">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="310" as="sourcePoint" />
+            <mxPoint x="550" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-24" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="210" y="290" width="280" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-25" value="Client" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="320" y="290" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-26" value="Logic" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="330" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-27" value="Communication with scanning device" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="330" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-28" value="Web GUI" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="420" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-29" value="" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-27" target="3DI-tEo_D6uw-kGYM53E-26">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="370" as="sourcePoint" />
+            <mxPoint x="500" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-30" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-28" target="3DI-tEo_D6uw-kGYM53E-26">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="60" y="450" as="sourcePoint" />
+            <mxPoint x="110" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="3DI-tEo_D6uw-kGYM53E-31" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="3DI-tEo_D6uw-kGYM53E-27" target="3DI-tEo_D6uw-kGYM53E-6">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="370" as="sourcePoint" />
+            <mxPoint x="500" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
