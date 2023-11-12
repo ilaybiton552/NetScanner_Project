@@ -1,23 +1,35 @@
 from scapy.all import *
+from threading import Thread
+from time import sleep
 
 
-def print_packet(packet):
-    """
-    the function prints the summary of a packet
-    :param packet: the packet to print
-    :return: None
-    """
-    print(packet.summary())
+class Sniffer(Thread):
+    def __init__(self):
+        self.count = 0
+        self.running = True
+        super().__init__()
+
+    def run(self):
+        sniff(prn=self.print_packet, stop_filter=self.stop_filter)
+
+    def print_packet(self, packet):
+        print(packet.summary())
+
+    def stop_filter(self, packet):
+        if self.count >= 5:
+            self.running = False
+        return self.count >= 5
 
 
-def main():
-    print("welcome to sniffing prototype:")
+sniffer = Sniffer()
 
-    try:
-        sniff(lfilter=print_packet)  # do the sniffing
-    except Exception:
-        print("the sniffing stopped")
+print("[*] Start sniffing...")
+sniffer.start()
 
+while sniffer.running:
+    print(sniffer.count)
+    sleep(1)
+    sniffer.count += 1
 
-if __name__ == '__main__':
-    main()
+print("[*] Stop sniffing")
+sniffer.join()
