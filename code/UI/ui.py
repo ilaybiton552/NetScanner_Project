@@ -28,7 +28,8 @@ def start_scanning():
     :return: None
     """
     response = requests.get('http://localhost:5000/start_scan')
-    #check_request(response)
+    check_request(response)
+    print(response.text)
 
 
 def stop_scanning():
@@ -37,7 +38,8 @@ def stop_scanning():
     :return: None
     """
     response = requests.get('http://localhost:5000/stop_scan')
-    #check_request(response)
+    check_request(response)
+    print(response.text)
 
 
 def main():
@@ -48,14 +50,14 @@ def main():
     except Exception as ex:
         print(ex)
     try:
-        start_scanning()
-        stop = input()
-        while stop != 's':
+        while True:
+            start_scanning()
             stop = input()
-        stop_scanning()
+            while stop != 'stop':
+                stop = input()
+            stop_scanning()
     except Exception as ex:
         print(ex)
-
 
 
 if __name__ == '__main__':

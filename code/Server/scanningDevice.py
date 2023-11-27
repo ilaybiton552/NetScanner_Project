@@ -20,8 +20,6 @@ class Sniffer(Thread):
     def stop_filter(self, packet):
         return self.running
 
-sniffer = Sniffer()
-
 
 class Network:
     def __init__(self, ssid, network_type, authentication, encryption):
@@ -138,6 +136,8 @@ def start_sniffing():
     the function activates the sniffing
     :return: None
     """
+    global sniffer
+    sniffer = Sniffer()
     print("[*] Start sniffing...")
     sniffer.start()
 
