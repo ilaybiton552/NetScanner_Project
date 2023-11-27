@@ -4,6 +4,22 @@ import subprocess
 import re
 import pywifi
 import time
+import requests
+
+
+DNS_API = "https://networkcalc.com/api/dns/lookup/"
+
+
+def handle_packet(packet):
+    # if DNS packet - check for DNS poisoning
+    if DNS in packet:
+        domain = packet[DNS].qd.qname.decode('utf-8')
+        response = requests.get(DNS_API + domain)
+    print(packet.summary())
+
+
+def filter_packet(packet):
+    return DNS in packet
 
 
 class Sniffer(Thread):
@@ -12,13 +28,7 @@ class Sniffer(Thread):
         super().__init__()
 
     def run(self):
-        sniff(prn=self.print_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
-
-    def filter_packet(self, packet):
-        return DNS in packet
-
-    def print_packet(self, packet):
-        print(packet.summary())
+        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
 
     def stop_filter(self, packet):
         return self.running
