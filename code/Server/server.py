@@ -12,7 +12,16 @@ def get_available_networks():
     return jsonify(network_dicts)
 
 
+@app.route('/start_scan')
+def start_scanning():
+    scanningDevice.start_sniffing()
+    return "start scanning"
 
+
+@app.route('/stop_scan')
+def stop_scanning():
+    scanningDevice.stop_sniffing()
+    return "stop scanning"
 
 
 def main():

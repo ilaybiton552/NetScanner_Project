@@ -8,7 +8,6 @@ import time
 
 class Sniffer(Thread):
     def __init__(self):
-        self.count = 0
         self.running = True
         super().__init__()
 
@@ -19,9 +18,9 @@ class Sniffer(Thread):
         print(packet.summary())
 
     def stop_filter(self, packet):
-        if self.count >= 5:
-            self.running = False
-        return self.count >= 5
+        return self.running
+
+sniffer = Sniffer()
 
 
 class Network:
@@ -134,25 +133,23 @@ class Network:
             return f"Error: {e}"
 
 
-def sniff():
+def start_sniffing():
     """
     the function activates the sniffing
     :return: None
     """
-    sniffer = Sniffer()
-
     print("[*] Start sniffing...")
     sniffer.start()
 
-    while sniffer.running:
-        print(sniffer.count)
-        sleep(1)
-        sniffer.count += 1
 
+def stop_sniffing():
+    """
+    The method stops the sniffing
+    :return:
+    """
+    sniffer.running = False
     print("[*] Stop sniffing")
     sniffer.join()
-
-
 
 
 def show_available_networks():
@@ -168,9 +165,3 @@ def show_available_networks():
             print(network.ssid)
     else:
         print(networks)
-
-
-
-
-
-
