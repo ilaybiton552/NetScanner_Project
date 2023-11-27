@@ -12,7 +12,10 @@ class Sniffer(Thread):
         super().__init__()
 
     def run(self):
-        sniff(prn=self.print_packet, stop_filter=self.stop_filter)
+        sniff(prn=self.print_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
+
+    def filter_packet(self, packet):
+        return DNS in packet
 
     def print_packet(self, packet):
         print(packet.summary())
