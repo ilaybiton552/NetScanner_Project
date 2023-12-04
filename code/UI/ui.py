@@ -53,18 +53,14 @@ def connect_to_network(ssid, password):
 
 
 def main():
-<<<<<<< HEAD
-    get_available_networks()
-    ssid = input("Enter the name of network that you want to connect to: ")
-    password = input("Enter the password to that network")
-    connect_to_network(ssid, password)
-=======
     try:
         get_available_networks()
         ssid = input("Enter the name of network that you want to connect to: ")
         password = input("Enter the password to that network: ")
+        connect_to_network(ssid, password)
     except Exception as ex:
         print(ex)
+    """    
     try:
         while True:
             start_scanning()
@@ -74,8 +70,8 @@ def main():
             stop_scanning()
     except Exception as ex:
         print(ex)
+    """
 
->>>>>>> d55f854f2812a726bb0966eb4f30e38a75171ac4
 
 if __name__ == '__main__':
     main()
