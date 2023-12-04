@@ -5,9 +5,45 @@ import re
 import pywifi
 import time
 import requests
-
+import os
+import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
+
+
+def get_wireless_interfaces():
+    wireless_interfaces = []
+
+    for interface, details in psutil.net_if_addrs().items():
+        for detail in details:
+            if detail.family == psutil.AF_INET and 'wireless' in detail.address:
+                wireless_interfaces.append(interface)
+
+    return wireless_interfaces
+
+
+def enable_monitor_mode(interface):
+    try:
+        # Run the command to enable monitor mode
+        os.system(f"sudo iw dev {interface} set type monitor")
+        print(f"Monitor mode enabled on {interface}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+def turn_on_monitor_mode():
+    # Get the list of wireless interfaces
+    wireless_interfaces = get_wireless_interfaces()
+
+    if wireless_interfaces:
+        print("Wireless Interfaces:")
+        for interface in wireless_interfaces:
+            print(interface)
+
+        # Enable monitor mode on the first wireless interface
+        enable_monitor_mode(wireless_interfaces[0])
+    else:
+        print("No wireless interfaces found.")
 
 
 def handle_packet(packet):
