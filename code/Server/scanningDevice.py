@@ -50,7 +50,18 @@ def handle_packet(packet):
     # if DNS packet - check for DNS poisoning
     if DNS in packet:
         domain = packet[DNS].qd.qname.decode('utf-8')
-        response = requests.get(DNS_API + domain)
+        dns_response = requests.get(DNS_API + domain)
+        dns_ip = dns_response.get('data', {}).get('A', None)
+
+        if dns_ip:
+            http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
+            if dns_ip == http_ip:
+                print(f"No DNS poisoning detected. DNS IP: {dns_ip}, HTTP IP: {http_ip}")
+            else:
+                print(f"Potential DNS poisoning detected! DNS IP: {dns_ip}, HTTP IP: {http_ip}")
+        else:
+            print(f"No IP address found in DNS response for domain: {domain}")
+
     print(packet.summary())
 
 
