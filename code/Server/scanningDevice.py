@@ -51,7 +51,7 @@ def handle_packet(packet):
     if DNS in packet:
         domain = packet[DNS].qd.qname.decode('utf-8')
         dns_response = requests.get(DNS_API + domain)
-        dns_ip = dns_response.get('data', {}).get('A', None)
+        dns_ip = dns_response.json().get("records").get('A')[0].get('address')
 
         if dns_ip:
             http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
