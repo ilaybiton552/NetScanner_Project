@@ -15,10 +15,21 @@ def get_available_networks():
         print(f"Error: {response.status_code} - {response.text}")
 
 
+def connect_to_network(ssid, password):
+    url = 'http://localhost:5000/networks'
+    network_info = {'ssid': ssid, 'password': password}
+    response = requests.post(url, json=network_info)
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        print(response.json())
+
+
 def main():
     get_available_networks()
     ssid = input("Enter the name of network that you want to connect to: ")
     password = input("Enter the password to that network")
+    connect_to_network(ssid, password)
 
 if __name__ == '__main__':
     main()

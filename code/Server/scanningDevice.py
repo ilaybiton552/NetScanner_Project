@@ -94,6 +94,9 @@ class Network:
             network_info = result.stdout
             network_info = network_info.split('\n')
 
+            # Check if there are enough lines in network_info
+            if len(network_info) < 5:
+                raise ValueError("Not enough lines in network_info")
             # Remove the first 3 lines
             network_info = network_info[4:]
 
@@ -131,6 +134,8 @@ class Network:
 
             return networks
         except subprocess.CalledProcessError as e:
+            return f"Error: {e}"
+        except ValueError as e:
             return f"Error: {e}"
 
 
