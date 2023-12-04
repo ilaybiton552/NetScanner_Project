@@ -21,8 +21,15 @@ def connect_to_network():
         ssid = request_data.get('ssid')
         password = request_data.get('password')
 
+<<<<<<< HEAD
         if not ssid or not password:
             return jsonify({'error': 'SSID and password are required'})
+=======
+@app.route('/start_scan')
+def start_scanning():
+    scanningDevice.start_sniffing()
+    return "start scanning"
+>>>>>>> d55f854f2812a726bb0966eb4f30e38a75171ac4
 
         networks = scanningDevice.Network.scan_wifi_networks()
         network = list(filter(lambda network: network.ssid == ssid, networks))
@@ -34,6 +41,11 @@ def connect_to_network():
 
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
+
+@app.route('/stop_scan')
+def stop_scanning():
+    scanningDevice.stop_sniffing()
+    return "stop scanning"
 
 
 def main():

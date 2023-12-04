@@ -4,24 +4,34 @@ import subprocess
 import re
 import pywifi
 import time
+import requests
+
+
+DNS_API = "https://networkcalc.com/api/dns/lookup/"
+
+
+def handle_packet(packet):
+    # if DNS packet - check for DNS poisoning
+    if DNS in packet:
+        domain = packet[DNS].qd.qname.decode('utf-8')
+        response = requests.get(DNS_API + domain)
+    print(packet.summary())
+
+
+def filter_packet(packet):
+    return DNS in packet
 
 
 class Sniffer(Thread):
     def __init__(self):
-        self.count = 0
         self.running = True
         super().__init__()
 
     def run(self):
-        sniff(prn=self.print_packet, stop_filter=self.stop_filter)
-
-    def print_packet(self, packet):
-        print(packet.summary())
+        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
 
     def stop_filter(self, packet):
-        if self.count >= 5:
-            self.running = False
-        return self.count >= 5
+        return self.running
 
 
 class Network:
@@ -139,25 +149,25 @@ class Network:
             return f"Error: {e}"
 
 
-def sniff():
+def start_sniffing():
     """
     the function activates the sniffing
     :return: None
     """
+    global sniffer
     sniffer = Sniffer()
-
     print("[*] Start sniffing...")
     sniffer.start()
 
-    while sniffer.running:
-        print(sniffer.count)
-        sleep(1)
-        sniffer.count += 1
 
+def stop_sniffing():
+    """
+    The method stops the sniffing
+    :return:
+    """
+    sniffer.running = False
     print("[*] Stop sniffing")
     sniffer.join()
-
-
 
 
 def show_available_networks():
@@ -173,9 +183,3 @@ def show_available_networks():
             print(network.ssid)
     else:
         print(networks)
-
-
-
-
-
-
