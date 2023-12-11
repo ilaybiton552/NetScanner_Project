@@ -61,6 +61,10 @@ def handle_packet(packet):
                 print(f"Potential DNS poisoning detected! DNS IP: {dns_ip}, HTTP IP: {http_ip}")
         else:
             print(f"No IP address found in DNS response for domain: {domain}")
+    # if TCP packet - check for SYN flag
+    elif TCP in packet:
+        # if SYN flag on - check for SYN Flood attack
+
 
     print(packet.summary())
 
