@@ -12,6 +12,7 @@ DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
 NUM_SYN_FLOOD_ATTACK_PACKETS = 15
 TIME_BETWEEN_SYN_PACKETS = 10
+DNS_VALID_STATUS = "OK"
 
 
 def get_wireless_interfaces():
@@ -55,12 +56,18 @@ def is_dns_poisoning(packet):
     :param packet: DNS packet
     :return: bool, True - an attack, False - not
     """
-    domain = packet[DNS].qd.qname.decode('utf-8')
+    # not an answer for DNS - can't be an attack
+    if packet[DNS].an is None:
+        return False
+    if packet[DNS].qd is None:
+        return False
+    domain = packet[DNS].qd.qname.decode()[0:-1]
+    packet_ip = packet[DNS].an.rdata
     dns_response = requests.get(DNS_API + domain)
-    dns_ip = dns_response.json().get("records").get('A')[0].get('address')
-    if dns_ip:
-        http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
-        return dns_ip != http_ip
+    response_json = dns_response.json()
+    if response_json.get("status") == DNS_VALID_STATUS:
+        response_ip = response_json.get("records").get('A')[0].get('address')
+        return response_ip != packet_ip
     return False
 
 
@@ -86,15 +93,13 @@ def handle_packet(packet):
     if DNS in packet:
         if is_dns_poisoning(packet):
             print("DNS Attack detected")
-
-
     # if TCP packet - check for SYN flag
     elif TCP in packet:
         if is_syn_flood_attack(packet):
             print("SYN Flood attack detected! Attacker - " + sender_ip)
 
 
-    print(packet.summary())
+    # print(packet.summary())
 
 
 def filter_packet(packet):
