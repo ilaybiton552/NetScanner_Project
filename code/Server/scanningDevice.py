@@ -10,6 +10,8 @@ import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
+NUM_SYN_FLOOD_ATTACK_PACKETS = 15
+TIME_BETWEEN_SYN_PACKETS = 10
 
 
 def get_wireless_interfaces():
@@ -47,43 +49,68 @@ def turn_on_monitor_mode():
         print("No wireless interfaces found.")
 
 
+def is_dns_poisoning(packet):
+    """
+    Checks if a packet is a DNS Poisoning attack
+    :param packet: DNS packet
+    :return: bool, True - an attack, False - not
+    """
+    domain = packet[DNS].qd.qname.decode('utf-8')
+    dns_response = requests.get(DNS_API + domain)
+    dns_ip = dns_response.json().get("records").get('A')[0].get('address')
+    if dns_ip:
+        http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
+        return dns_ip != http_ip
+    return False
+
+
+def is_syn_flood_attack(packet):
+    """
+    Checks if a SYN Flood attack occurred
+    :param packet: TCP SYN packet
+    :return: bool, True - at attack, False - not
+    """
+    if IP in packet:
+        sender_ip = packet[IP].src
+        # computer sent more than 15 tcp syn packets in the last 10 seconds - syn flood attack
+        return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS
+
+
 def handle_packet(packet):
+    """
+    Handles the packet after it got filter (check for an attack)
+    :param packet: the filtered packet
+    :return: None
+    """
     # if DNS packet - check for DNS poisoning
     if DNS in packet:
-        domain = packet[DNS].qd.qname.decode('utf-8')
-        dns_response = requests.get(DNS_API + domain)
-        dns_ip = dns_response.json().get("records").get('A')[0].get('address')
+        if is_dns_poisoning(packet):
+            print("DNS Attack detected")
 
-        if dns_ip:
-            http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
-            if dns_ip == http_ip:
-                print(f"No DNS poisoning detected. DNS IP: {dns_ip}, HTTP IP: {http_ip}")
-            else:
-                print(f"Potential DNS poisoning detected! DNS IP: {dns_ip}, HTTP IP: {http_ip}")
-        else:
-            print(f"No IP address found in DNS response for domain: {domain}")
+
     # if TCP packet - check for SYN flag
     elif TCP in packet:
-        if IP in packet:
-            sender_ip = packet[IP].src
-            # computer sent more than 15 tcp syn packets in the last 10 seconds - syn flood attack
-            if sniffer.add_ip(sender_ip) >= 15:
-                print("SYN Flood attack detected! Attacker - " + sender_ip)
+        if is_syn_flood_attack(packet):
+            print("SYN Flood attack detected! Attacker - " + sender_ip)
 
 
     print(packet.summary())
 
 
 def filter_packet(packet):
-    #return DNS in packet or (TCP in packet and packet[TCP].flags & SYN)
-    return TCP in packet and packet[TCP].flags & SYN
+    """
+    Filter for the packets relevant only for the attacks
+    :param packet: the packet to filter
+    :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
+    """
+    return DNS in packet or (TCP in packet and packet[TCP].flags & SYN)
 
 
 class Sniffer(Thread):
     def __init__(self):
         self.running = True
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
-        self.timer = time.perf_counter()  # timer for SYN Flood attack
+        self.start_time = time.perf_counter()  # timer for SYN Flood attack
         super().__init__()
 
     def run(self):
@@ -101,13 +128,15 @@ class Sniffer(Thread):
         num_of_times = self.syn_packets.get(ip)
         # if doesn't exist (never sent TCP SYN packet before)
         if num_of_times is None:
-            self.syn_packets[ip] = [1, self.timer]
+            self.syn_packets[ip] = [1, time.perf_counter()]
             return 1
 
         num_of_times = num_of_times[0]
-        # if more than 10 seconds without SYN attack passed - reset count
-        if self.timer - self.syn_packets[ip][1] > 10:
-            self.syn_packets[ip] = [1, self.timer]
+        # if more than 10 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
+        if time.perf_counter() - self.syn_packets[ip][1] > TIME_BETWEEN_SYN_PACKETS or \
+                num_of_times >= NUM_SYN_FLOOD_ATTACK_PACKETS:
+            num_of_times = 0
+            self.syn_packets[ip] = [1, time.perf_counter()]
         else:
             self.syn_packets[ip][0] = num_of_times + 1
         return num_of_times + 1

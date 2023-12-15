@@ -13,6 +13,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/scanningDevice.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectId" id="2Z5DCAegdi2szBhCmxnxa5DeB1m" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
