@@ -9,6 +9,7 @@ import os
 import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
+SYN = 0x02
 
 
 def get_wireless_interfaces():
@@ -64,13 +65,14 @@ def handle_packet(packet):
     # if TCP packet - check for SYN flag
     elif TCP in packet:
         # if SYN flag on - check for SYN Flood attack
-
+        if packet[TCP].flags & SYN:
+            print("syn flag packet")
 
     print(packet.summary())
 
 
 def filter_packet(packet):
-    return DNS in packet
+    return DNS in packet or TCP in packet
 
 
 class Sniffer(Thread):
