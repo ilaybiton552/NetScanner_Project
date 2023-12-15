@@ -64,27 +64,53 @@ def handle_packet(packet):
             print(f"No IP address found in DNS response for domain: {domain}")
     # if TCP packet - check for SYN flag
     elif TCP in packet:
-        # if SYN flag on - check for SYN Flood attack
-        if packet[TCP].flags & SYN:
-            print("syn flag packet")
+        if IP in packet:
+            sender_ip = packet[IP].src
+            # computer sent more than 15 tcp syn packets in the last 10 seconds - syn flood attack
+            if sniffer.add_ip(sender_ip) >= 15:
+                print("SYN Flood attack detected! Attacker - " + sender_ip)
+
 
     print(packet.summary())
 
 
 def filter_packet(packet):
-    return DNS in packet or TCP in packet
+    #return DNS in packet or (TCP in packet and packet[TCP].flags & SYN)
+    return TCP in packet and packet[TCP].flags & SYN
 
 
 class Sniffer(Thread):
     def __init__(self):
         self.running = True
+        self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
+        self.timer = time.perf_counter()  # timer for SYN Flood attack
         super().__init__()
 
     def run(self):
         sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
 
     def stop_filter(self, packet):
-        return self.running
+        return not self.running
+
+    def add_ip(self, ip):
+        """
+        Adds the ip of the computer which sent tcp syn packet to the dict
+        :param ip: string, the ip of the computer
+        :return: int, the number of times the computer sent tcp syn packet in the last 10 seconds
+        """
+        num_of_times = self.syn_packets.get(ip)
+        # if doesn't exist (never sent TCP SYN packet before)
+        if num_of_times is None:
+            self.syn_packets[ip] = [1, self.timer]
+            return 1
+
+        num_of_times = num_of_times[0]
+        # if more than 10 seconds without SYN attack passed - reset count
+        if self.timer - self.syn_packets[ip][1] > 10:
+            self.syn_packets[ip] = [1, self.timer]
+        else:
+            self.syn_packets[ip][0] = num_of_times + 1
+        return num_of_times + 1
 
 
 class Network:
