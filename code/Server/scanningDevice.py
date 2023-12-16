@@ -10,8 +10,8 @@ import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
-NUM_SYN_FLOOD_ATTACK_PACKETS = 15
-TIME_BETWEEN_SYN_PACKETS = 10
+NUM_SYN_FLOOD_ATTACK_PACKETS = 20
+TIME_BETWEEN_SYN_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 
 
@@ -53,12 +53,9 @@ def turn_on_monitor_mode():
 def is_dns_poisoning(packet):
     """
     Checks if a packet is a DNS Poisoning attack
-    :param packet: DNS packet
+    :param packet: DNS answer packet
     :return: bool, True - an attack, False - not
     """
-    # not an answer for DNS - can't be an attack
-    if packet[DNS].an is None:
-        return False
     if packet[DNS].qd is None:
         return False
     domain = packet[DNS].qd.qname.decode()[0:-1]
@@ -79,8 +76,11 @@ def is_syn_flood_attack(packet):
     """
     if IP in packet:
         sender_ip = packet[IP].src
-        # computer sent more than 15 tcp syn packets in the last 10 seconds - syn flood attack
-        return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS
+    else:  # TCP can only be with IP or IPv6
+        sender_ip = packet[IPv6].src
+    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
+
 
 
 def handle_packet(packet):
@@ -95,11 +95,12 @@ def handle_packet(packet):
             print("DNS Attack detected")
     # if TCP packet - check for SYN flag
     elif TCP in packet:
-        if is_syn_flood_attack(packet):
-            print("SYN Flood attack detected! Attacker - " + sender_ip)
+        check = is_syn_flood_attack(packet)
+        if check[0]:
+            print("SYN Flood attack detected! Attacker - " + check[1])
 
 
-    # print(packet.summary())
+    print(packet.summary())
 
 
 class Sniffer(Thread):
@@ -124,7 +125,7 @@ class Sniffer(Thread):
         :param packet: the packet to filter
         :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
         """
-        return (self.dns_poisoning and DNS in packet) or (self.syn_flood and TCP in packet and packet[TCP].flags & SYN)
+        return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or (self.syn_flood and TCP in packet and packet[TCP].flags & SYN)
 
     def add_ip(self, ip):
         """
@@ -139,7 +140,7 @@ class Sniffer(Thread):
             return 1
 
         num_of_times = num_of_times[0]
-        # if more than 10 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
+        # if more than 5 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
         if time.perf_counter() - self.syn_packets[ip][1] > TIME_BETWEEN_SYN_PACKETS or \
                 num_of_times >= NUM_SYN_FLOOD_ATTACK_PACKETS:
             num_of_times = 0
@@ -270,7 +271,7 @@ def start_sniffing(dns_poisoning, syn_flood, arp_spoofing):
     :return: None
     """
     global sniffer
-    sniffer = Sniffer(syn_flood, dns_poisoning, arp_spoofing)
+    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing)
     print("[*] Start sniffing...")
     sniffer.start()
 
