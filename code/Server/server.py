@@ -38,8 +38,20 @@ def connect_to_network():
 
 @app.route('/start_scan')
 def start_scanning():
-    scanningDevice.start_sniffing()
-    return "start scanning"
+    args = request.args
+    dns_poisoning = args.get('dns_poisoning', type=bool)
+    syn_flood = args.get('syn_flood', type=bool)
+    arp_spoofing = args.get('arp_spoofing', type=bool)
+
+    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing)
+    msg = "start scanning for:\n"
+    if dns_poisoning:
+        msg += "DNS Poisoning\n"
+    if syn_flood:
+        msg += "SYN Flood\n"
+    if arp_spoofing:
+        msg += "ARP Spoofing\n"
+    return msg
 
 
 @app.route('/stop_scan')

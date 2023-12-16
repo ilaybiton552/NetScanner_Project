@@ -102,27 +102,29 @@ def handle_packet(packet):
     # print(packet.summary())
 
 
-def filter_packet(packet):
-    """
-    Filter for the packets relevant only for the attacks
-    :param packet: the packet to filter
-    :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
-    """
-    return DNS in packet or (TCP in packet and packet[TCP].flags & SYN)
-
-
 class Sniffer(Thread):
-    def __init__(self):
+    def __init__(self, dns_poisoning, syn_flood, arp_spoofing):
         self.running = True
+        self.dns_poisoning = dns_poisoning
+        self.syn_flood = syn_flood
+        self.arp_spoofing = arp_spoofing
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
         self.start_time = time.perf_counter()  # timer for SYN Flood attack
         super().__init__()
 
     def run(self):
-        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
+        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=self.filter_packet)
 
     def stop_filter(self, packet):
         return not self.running
+
+    def filter_packet(self, packet):
+        """
+        Filter for the packets relevant only for the attacks
+        :param packet: the packet to filter
+        :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
+        """
+        return (self.dns_poisoning and DNS in packet) or (self.syn_flood and TCP in packet and packet[TCP].flags & SYN)
 
     def add_ip(self, ip):
         """
@@ -262,13 +264,13 @@ class Network:
             return f"Error: {e}"
 
 
-def start_sniffing():
+def start_sniffing(dns_poisoning, syn_flood, arp_spoofing):
     """
     the function activates the sniffing
     :return: None
     """
     global sniffer
-    sniffer = Sniffer()
+    sniffer = Sniffer(syn_flood, dns_poisoning, arp_spoofing)
     print("[*] Start sniffing...")
     sniffer.start()
 
