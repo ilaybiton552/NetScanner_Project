@@ -13,6 +13,7 @@ SYN = 0x02
 NUM_SYN_FLOOD_ATTACK_PACKETS = 20
 TIME_BETWEEN_SYN_PACKETS = 5
 DNS_VALID_STATUS = "OK"
+ARP_ANSWER_PACKET = 2
 
 
 def get_wireless_interfaces():
@@ -127,7 +128,7 @@ class Sniffer(Thread):
         """
         return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or \
                (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
-               (self.arp_spoofing and ARP in packet)
+               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET)
 
     def add_ip(self, ip):
         """
