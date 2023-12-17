@@ -125,7 +125,9 @@ class Sniffer(Thread):
         :param packet: the packet to filter
         :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
         """
-        return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or (self.syn_flood and TCP in packet and packet[TCP].flags & SYN)
+        return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or \
+               (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
+               (self.arp_spoofing and ARP in packet)
 
     def add_ip(self, ip):
         """
