@@ -14,6 +14,7 @@ NUM_SYN_FLOOD_ATTACK_PACKETS = 20
 TIME_BETWEEN_SYN_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
+BROADCAST = "ff:ff:ff:ff:ff:ff"
 
 
 def get_wireless_interfaces():
@@ -94,11 +95,20 @@ def handle_packet(packet):
     if DNS in packet:
         if is_dns_poisoning(packet):
             print("DNS Attack detected")
-    # if TCP packet - check for SYN flag
+    # if ARP packet - check for ARP spoofing attack
+    elif ARP in packet:
+        packet_ip = packet[ARP].psrc
+        packet_mac = packet[ARP].hwsrc
+        answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
+        if ARP in answer:
+            real_mac = answer[ARP].hwsrc
+            if real_mac is not None and real_mac != packet_mac:
+                print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+    # if TCP packet - check SYN flood attack
     elif TCP in packet:
         check = is_syn_flood_attack(packet)
         if check[0]:
-            print("SYN Flood attack detected! Attacker - " + check[1])
+            print(f"SYN Flood attack detected! Attacker - {check[1]}")
 
 
     print(packet.summary())
