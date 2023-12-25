@@ -100,10 +100,11 @@ def handle_packet(packet):
         packet_ip = packet[ARP].psrc
         packet_mac = packet[ARP].hwsrc
         answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
-        if ARP in answer:
-            real_mac = answer[ARP].hwsrc
-            if real_mac is not None and real_mac != packet_mac:
-                print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+        if answer is not NoneType:
+            if ARP in answer:
+                real_mac = answer[ARP].hwsrc
+                if real_mac is not None and real_mac != packet_mac:
+                    print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
     # if TCP packet - check SYN flood attack
     elif TCP in packet:
         check = is_syn_flood_attack(packet)
