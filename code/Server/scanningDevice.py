@@ -9,6 +9,12 @@ import os
 import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
+SYN = 0x02
+NUM_SYN_FLOOD_ATTACK_PACKETS = 20
+TIME_BETWEEN_SYN_PACKETS = 5
+DNS_VALID_STATUS = "OK"
+ARP_ANSWER_PACKET = 2
+BROADCAST = "ff:ff:ff:ff:ff:ff"
 
 
 def get_wireless_interfaces():
@@ -46,39 +52,116 @@ def turn_on_monitor_mode():
         print("No wireless interfaces found.")
 
 
+def is_dns_poisoning(packet):
+    """
+    Checks if a packet is a DNS Poisoning attack
+    :param packet: DNS answer packet
+    :return: bool, True - an attack, False - not
+    """
+    if packet[DNS].qd is None:
+        return False
+    domain = packet[DNS].qd.qname.decode()[0:-1]
+    packet_ip = packet[DNS].an.rdata
+    dns_response = requests.get(DNS_API + domain)
+    response_json = dns_response.json()
+    if response_json.get("status") == DNS_VALID_STATUS:
+        response_ip = response_json.get("records").get('A')[0].get('address')
+        return response_ip != packet_ip
+    return False
+
+
+def is_syn_flood_attack(packet):
+    """
+    Checks if a SYN Flood attack occurred
+    :param packet: TCP SYN packet
+    :return: bool, True - at attack, False - not
+    """
+    if IP in packet:
+        sender_ip = packet[IP].src
+    else:  # TCP can only be with IP or IPv6
+        sender_ip = packet[IPv6].src
+    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
+
+
+
 def handle_packet(packet):
+    """
+    Handles the packet after it got filter (check for an attack)
+    :param packet: the filtered packet
+    :return: None
+    """
     # if DNS packet - check for DNS poisoning
     if DNS in packet:
-        domain = packet[DNS].qd.qname.decode('utf-8')
-        dns_response = requests.get(DNS_API + domain)
-        dns_ip = dns_response.json().get("records").get('A')[0].get('address')
+        if is_dns_poisoning(packet):
+            print("DNS Attack detected")
+    # if ARP packet - check for ARP spoofing attack
+    elif ARP in packet:
+        packet_ip = packet[ARP].psrc
+        packet_mac = packet[ARP].hwsrc
+        answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
+        if answer is not NoneType:
+            if ARP in answer:
+                real_mac = answer[ARP].hwsrc
+                if real_mac is not None and real_mac != packet_mac:
+                    print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+    # if TCP packet - check SYN flood attack
+    elif TCP in packet:
+        check = is_syn_flood_attack(packet)
+        if check[0]:
+            print(f"SYN Flood attack detected! Attacker - {check[1]}")
 
-        if dns_ip:
-            http_ip = packet[IP].src  # Assuming you are looking for the source IP of the HTTP GET request
-            if dns_ip == http_ip:
-                print(f"No DNS poisoning detected. DNS IP: {dns_ip}, HTTP IP: {http_ip}")
-            else:
-                print(f"Potential DNS poisoning detected! DNS IP: {dns_ip}, HTTP IP: {http_ip}")
-        else:
-            print(f"No IP address found in DNS response for domain: {domain}")
 
     print(packet.summary())
 
 
-def filter_packet(packet):
-    return DNS in packet
-
-
 class Sniffer(Thread):
-    def __init__(self):
+    def __init__(self, dns_poisoning, syn_flood, arp_spoofing):
         self.running = True
+        self.dns_poisoning = dns_poisoning
+        self.syn_flood = syn_flood
+        self.arp_spoofing = arp_spoofing
+        self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
+        self.start_time = time.perf_counter()  # timer for SYN Flood attack
         super().__init__()
 
     def run(self):
-        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=filter_packet)
+        sniff(prn=handle_packet, stop_filter=self.stop_filter, lfilter=self.filter_packet)
 
     def stop_filter(self, packet):
-        return self.running
+        return not self.running
+
+    def filter_packet(self, packet):
+        """
+        Filter for the packets relevant only for the attacks
+        :param packet: the packet to filter
+        :return: True - kind of packet to look for an attack, False - doesn't include protocols for attacks
+        """
+        return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or \
+               (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
+               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET)
+
+    def add_ip(self, ip):
+        """
+        Adds the ip of the computer which sent tcp syn packet to the dict
+        :param ip: string, the ip of the computer
+        :return: int, the number of times the computer sent tcp syn packet in the last 10 seconds
+        """
+        num_of_times = self.syn_packets.get(ip)
+        # if doesn't exist (never sent TCP SYN packet before)
+        if num_of_times is None:
+            self.syn_packets[ip] = [1, time.perf_counter()]
+            return 1
+
+        num_of_times = num_of_times[0]
+        # if more than 5 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
+        if time.perf_counter() - self.syn_packets[ip][1] > TIME_BETWEEN_SYN_PACKETS or \
+                num_of_times >= NUM_SYN_FLOOD_ATTACK_PACKETS:
+            num_of_times = 0
+            self.syn_packets[ip] = [1, time.perf_counter()]
+        else:
+            self.syn_packets[ip][0] = num_of_times + 1
+        return num_of_times + 1
 
 
 class Network:
@@ -196,13 +279,13 @@ class Network:
             return f"Error: {e}"
 
 
-def start_sniffing():
+def start_sniffing(dns_poisoning, syn_flood, arp_spoofing):
     """
     the function activates the sniffing
     :return: None
     """
     global sniffer
-    sniffer = Sniffer()
+    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing)
     print("[*] Start sniffing...")
     sniffer.start()
 
