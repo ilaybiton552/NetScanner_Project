@@ -14,6 +14,7 @@ def get_available_networks():
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
 
+
 @app.route('/networks', methods=['POST'])
 def connect_to_network():
     try:
