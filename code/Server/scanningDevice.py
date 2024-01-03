@@ -116,11 +116,12 @@ def handle_packet(packet):
 
 
 class Sniffer(Thread):
-    def __init__(self, dns_poisoning, syn_flood, arp_spoofing):
+    def __init__(self, dns_poisoning, syn_flood, arp_spoofing, smurf):
         self.running = True
         self.dns_poisoning = dns_poisoning
         self.syn_flood = syn_flood
         self.arp_spoofing = arp_spoofing
+        self.smurf = smurf
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
         self.start_time = time.perf_counter()  # timer for SYN Flood attack
         super().__init__()

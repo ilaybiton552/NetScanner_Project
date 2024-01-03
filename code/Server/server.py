@@ -43,8 +43,9 @@ def start_scanning():
     dns_poisoning = args.get('dns_poisoning', type=bool)
     syn_flood = args.get('syn_flood', type=bool)
     arp_spoofing = args.get('arp_spoofing', type=bool)
+    smurf = args.get('smurf', type=bool)
 
-    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing)
+    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf)
     msg = "start scanning for:\n"
     if dns_poisoning:
         msg += "DNS Poisoning\n"
@@ -52,6 +53,8 @@ def start_scanning():
         msg += "SYN Flood\n"
     if arp_spoofing:
         msg += "ARP Spoofing\n"
+    if smurf:
+        msg += "SMURF\n"
     return msg
 
 

@@ -22,12 +22,12 @@ def get_available_networks():
         print(f"SSID: {network['ssid']}, Network type: {network['network_type']}, Authentication: {network['authentication']}, Encryption: {network['encryption']}")
 
 
-def start_scanning(dns_poisoning, syn_flood, arp_spoofing):
+def start_scanning(dns_poisoning, syn_flood, arp_spoofing, smurf):
     """
     Starts the scanning of the device
     :return: None
     """
-    request_msg = 'http://localhost:5000/start_scan?dns_poisoning={dns}&syn_flood={{syn}}&arp_spoofing={{{{arp}}}}'
+    request_msg = 'http://localhost:5000/start_scan?dns_poisoning={dns}&syn_flood={{syn}}&arp_spoofing={{{{arp}}}}&smurf={{{{{{smurf}}}}}}'
     if dns_poisoning:
         request_msg = request_msg.format(dns=1)
     else:
@@ -40,6 +40,10 @@ def start_scanning(dns_poisoning, syn_flood, arp_spoofing):
         request_msg = request_msg.format(arp=1)
     else:
         request_msg = request_msg.format(arp='')
+    if smurf:
+        request_msg = request_msg.format(smurf=1)
+    else:
+        request_msg = request_msg.format(smurf='')
     response = requests.get(request_msg)
     check_request(response)
     print(response.text)
@@ -101,7 +105,8 @@ def main():
                     dns_poisoning = get_yes_no_input("Filter for DNS Poisoning attack? (y/n): ")
                     syn_flood = get_yes_no_input("Filter for SYN Flood attack? (y/n): ")
                     arp_spoofing = get_yes_no_input("Filter for ARP Spoofing attack? (y/n): ")
-                    start_scanning(dns_poisoning, syn_flood, arp_spoofing)
+                    smurf = get_yes_no_input("Filter for SMURF attack? (y/n): ")
+                    start_scanning(dns_poisoning, syn_flood, arp_spoofing, smurf)
         except Exception as ex:
             print(ex)
 
