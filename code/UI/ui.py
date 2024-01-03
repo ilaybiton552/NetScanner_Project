@@ -27,7 +27,7 @@ def start_scanning(dns_poisoning, syn_flood, arp_spoofing, smurf):
     Starts the scanning of the device
     :return: None
     """
-    request_msg = 'http://localhost:5000/start_scan?dns_poisoning={dns}&syn_flood={{syn}}&arp_spoofing={{{{arp}}}}&smurf={{{{{{smurf}}}}}}'
+    request_msg = 'http://localhost:5000/start_scan?dns_poisoning={dns}&syn_flood={{syn}}&arp_spoofing={{{{arp}}}}&smurf={{{{{{{{smurf}}}}}}}}'
     if dns_poisoning:
         request_msg = request_msg.format(dns=1)
     else:

@@ -81,7 +81,7 @@ def is_syn_flood_attack(packet):
     else:  # TCP can only be with IP or IPv6
         sender_ip = packet[IPv6].src
     # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
-    return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
+    return sniffer.add_ip_syn(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
 
 
 
@@ -123,7 +123,8 @@ class Sniffer(Thread):
         self.arp_spoofing = arp_spoofing
         self.smurf = smurf
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
-        self.start_time = time.perf_counter()  # timer for SYN Flood attack
+        self.icmp_packets = {}  # dict which contains all of the source IP of senders of ICMP packets
+        self.start_time = time.perf_counter()  # timer for SYN Flood and SMURF attacks
         super().__init__()
 
     def run(self):
@@ -140,9 +141,10 @@ class Sniffer(Thread):
         """
         return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or \
                (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
-               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET)
+               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET) or \
+               (self.smurf and ICMP in packet and Ether in packet and packet[Ether].dst == BROADCAST)
 
-    def add_ip(self, ip):
+    def add_ip_syn(self, ip):
         """
         Adds the ip of the computer which sent tcp syn packet to the dict
         :param ip: string, the ip of the computer
@@ -280,13 +282,13 @@ class Network:
             return f"Error: {e}"
 
 
-def start_sniffing(dns_poisoning, syn_flood, arp_spoofing):
+def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf):
     """
     the function activates the sniffing
     :return: None
     """
     global sniffer
-    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing)
+    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf)
     print("[*] Start sniffing...")
     sniffer.start()
 
