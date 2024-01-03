@@ -10,8 +10,8 @@ import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
-NUM_SYN_FLOOD_ATTACK_PACKETS = 20
-TIME_BETWEEN_SYN_PACKETS = 5
+NUM_POTENTIAL_SPAM_PACKETS = 20
+TIME_BETWEEN_POTENTIAL_SPAM_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
@@ -70,18 +70,56 @@ def is_dns_poisoning(packet):
     return False
 
 
+def add_ip(ip, sniffer_dict):
+    """
+    Adds the ip of the computer which sent spam packet to the dict
+    :param ip: string, the ip of the computer
+    :param sniffer_dict: dict, the relevant dict of the sniffer for the relevant attack
+    :return: int, the number of times the computer sent spam packet in the last 5 seconds
+    """
+    num_of_times = sniffer_dict.get(ip)
+    # if doesn't exist (never sent TCP SYN packet before)
+    if num_of_times is None:
+        sniffer_dict[ip] = [1, time.perf_counter()]
+        return 1
+
+    num_of_times = num_of_times[0]
+    # if more than 5 seconds without spam attack passed - reset count or already counted as spam attack
+    if time.perf_counter() - sniffer_dict[ip][1] > TIME_BETWEEN_POTENTIAL_SPAM_PACKETS or \
+        num_of_times >= NUM_POTENTIAL_SPAM_PACKETS:
+        num_of_times = 0
+        sniffer_dict[ip] = [1, time.perf_counter()]
+    else:
+        sniffer_dict[ip][0] = num_of_times + 1
+    return num_of_times + 1
+
+
 def is_syn_flood_attack(packet):
     """
     Checks if a SYN Flood attack occurred
     :param packet: TCP SYN packet
-    :return: bool, True - at attack, False - not
+    :return: bool, True - an attack, False - not
     """
     if IP in packet:
         sender_ip = packet[IP].src
     else:  # TCP can only be with IP or IPv6
         sender_ip = packet[IPv6].src
     # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
-    return sniffer.add_ip_syn(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
+    return add_ip(sender_ip, sniffer.syn_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
+
+
+def is_smurf_attack(packet):
+    """
+    Checks if a SMURF attack occurred
+    :param packet: ICMP packet
+    :return: bool, True - an attack, False - not
+    """
+    if IP in packet:
+        sender_ip = packet[IP].src
+    else:
+        sender_ip = packet[IPv6].src
+    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
 
 
 
@@ -105,7 +143,12 @@ def handle_packet(packet):
                 real_mac = answer[ARP].hwsrc
                 if real_mac is not None and real_mac != packet_mac:
                     print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-    # if TCP packet - check SYN flood attack
+    # if ICMP packet - check for SMURF attack
+    elif ICMP in packet:
+        check = is_smurf_attack(packet)
+        if check[0]:
+            print(f"SMURF attack detected! Attacker - {check[1]}")
+    # if TCP packet - check for SYN Flood attack
     elif TCP in packet:
         check = is_syn_flood_attack(packet)
         if check[0]:
@@ -143,28 +186,6 @@ class Sniffer(Thread):
                (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
                (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET) or \
                (self.smurf and ICMP in packet and Ether in packet and packet[Ether].dst == BROADCAST)
-
-    def add_ip_syn(self, ip):
-        """
-        Adds the ip of the computer which sent tcp syn packet to the dict
-        :param ip: string, the ip of the computer
-        :return: int, the number of times the computer sent tcp syn packet in the last 10 seconds
-        """
-        num_of_times = self.syn_packets.get(ip)
-        # if doesn't exist (never sent TCP SYN packet before)
-        if num_of_times is None:
-            self.syn_packets[ip] = [1, time.perf_counter()]
-            return 1
-
-        num_of_times = num_of_times[0]
-        # if more than 5 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
-        if time.perf_counter() - self.syn_packets[ip][1] > TIME_BETWEEN_SYN_PACKETS or \
-                num_of_times >= NUM_SYN_FLOOD_ATTACK_PACKETS:
-            num_of_times = 0
-            self.syn_packets[ip] = [1, time.perf_counter()]
-        else:
-            self.syn_packets[ip][0] = num_of_times + 1
-        return num_of_times + 1
 
 
 class Network:
