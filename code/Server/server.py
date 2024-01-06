@@ -46,6 +46,7 @@ def start_scanning():
     syn_flood = args.get('syn_flood')
     arp_spoofing = args.get('arp_spoofing')
     smurf = args.get('smurf')
+    evil_twin = args.get('evil_twin')
 
     scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf)
     msg = "start scanning for:\n"
@@ -57,6 +58,8 @@ def start_scanning():
         msg += "ARP Spoofing\n"
     if smurf:
         msg += "SMURF\n"
+    if evil_twin:
+        msg += "Evil Twin\n"
     return jsonify({"Message": msg})
 
 
