@@ -18,6 +18,7 @@ def get_available_networks():
     check_request(response)
     # Print the cat information
     network_info = response.json()
+    print(network_info)
     for network in network_info:
         print(f"SSID: {network['ssid']}, Network type: {network['network_type']}, Authentication: {network['authentication']}, Encryption: {network['encryption']}")
 

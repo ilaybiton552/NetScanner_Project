@@ -1,0 +1,24 @@
+.networkDesign {
+    width: 50rem;
+    align-items: center ;
+    vertical-align: middle;
+    margin: 1%;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 32rem;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+ul {
+    text-decoration: none;
+}
+
+ul li {
+    font-size: 20px;
+    list-style: none;
+}

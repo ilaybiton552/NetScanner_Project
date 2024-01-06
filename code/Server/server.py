@@ -1,9 +1,11 @@
 import scanningDevice
 from loginRequest import *
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/networks', methods=['GET'])
 def get_available_networks():
@@ -37,13 +39,13 @@ def connect_to_network():
         return jsonify({'Error': str(e)}), 500
 
 
-@app.route('/start_scan')
+@app.route('/start_scan', methods=['POST'])
 def start_scanning():
-    args = request.args
-    dns_poisoning = args.get('dns_poisoning', type=bool)
-    syn_flood = args.get('syn_flood', type=bool)
-    arp_spoofing = args.get('arp_spoofing', type=bool)
-    smurf = args.get('smurf', type=bool)
+    args = request.json
+    dns_poisoning = args.get('dns_poisoning')
+    syn_flood = args.get('syn_flood')
+    arp_spoofing = args.get('arp_spoofing')
+    smurf = args.get('smurf')
 
     scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf)
     msg = "start scanning for:\n"
@@ -55,13 +57,13 @@ def start_scanning():
         msg += "ARP Spoofing\n"
     if smurf:
         msg += "SMURF\n"
-    return msg
+    return jsonify({"Message": msg})
 
 
 @app.route('/stop_scan')
 def stop_scanning():
     scanningDevice.stop_sniffing()
-    return "stop scanning"
+    return jsonify({"Message":"stop scanning"})
 
 
 def main():

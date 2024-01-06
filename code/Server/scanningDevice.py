@@ -274,27 +274,30 @@ class Network:
             counter = 0
 
             for line in network_info.split('\n'):
-                line = line.strip()
+                try:
+                    line = line.strip()
 
-                if line.startswith("SSID "):
-                    current_network_info = {'ssid': line.split(' : ')[1].strip()}
-                    ssid = current_network_info.get('ssid')
-                    counter = 1
-                elif line.startswith("Network type"):
-                    current_network_info['network_type'] = line.split(':')[-1].strip()
-                    network_type = current_network_info.get('network_type')
-                    counter += 1
-                elif line.startswith("Authentication"):
-                    current_network_info['authentication'] = line.split(':')[-1].strip()
-                    authentication = current_network_info.get("authentication")
-                    counter += 1
-                elif line.startswith("Encryption"):
-                    current_network_info['encryption'] = line.split(':')[-1].strip()
-                    encryption = current_network_info.get('encryption')
-                    counter += 1
-                elif (counter % 4 == 0):
-                    counter = -1
-                    networks.append(Network(ssid, network_type, authentication, encryption))
+                    if line.startswith("SSID "):
+                        current_network_info = {'ssid': line.split(' : ')[1].strip()}
+                        ssid = current_network_info.get('ssid')
+                        counter = 1
+                    elif line.startswith("Network type"):
+                        current_network_info['network_type'] = line.split(':')[-1].strip()
+                        network_type = current_network_info.get('network_type')
+                        counter += 1
+                    elif line.startswith("Authentication"):
+                        current_network_info['authentication'] = line.split(':')[-1].strip()
+                        authentication = current_network_info.get("authentication")
+                        counter += 1
+                    elif line.startswith("Encryption"):
+                        current_network_info['encryption'] = line.split(':')[-1].strip()
+                        encryption = current_network_info.get('encryption')
+                        counter += 1
+                    elif (counter % 4 == 0):
+                        counter = -1
+                        networks.append(Network(ssid, network_type, authentication, encryption))
+                except Exception:  # error in network details (for example, missing SSID)
+                    pass
 
             return networks
         except subprocess.CalledProcessError as e:
