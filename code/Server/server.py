@@ -48,7 +48,7 @@ def start_scanning():
     smurf = args.get('smurf')
     evil_twin = args.get('evil_twin')
 
-    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf)
+    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     msg = "start scanning for:\n"
     if dns_poisoning:
         msg += "DNS Poisoning\n"
@@ -67,6 +67,33 @@ def start_scanning():
 def stop_scanning():
     scanningDevice.stop_sniffing()
     return jsonify({"Message":"stop scanning"})
+
+
+@app.route('/update_scan', methods=['POST'])
+def update_scanning():
+    args = request.json
+    dns_poisoning = args.get('dns_poisoning')
+    syn_flood = args.get('syn_flood')
+    arp_spoofing = args.get('arp_spoofing')
+    smurf = args.get('smurf')
+    evil_twin = args.get('evil_twin')
+
+    try:
+        scanningDevice.update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+        msg = "update scanning for:\n"
+        if dns_poisoning:
+            msg += "DNS Poisoning\n"
+        if syn_flood:
+            msg += "SYN Flood\n"
+        if arp_spoofing:
+            msg += "ARP Spoofing\n"
+        if smurf:
+            msg += "SMURF\n"
+        if evil_twin:
+            msg += "Evil Twin\n"
+        return jsonify({"Message": msg})
+    except Exception:
+        return jsonify({"Error":"error"})
 
 
 def main():

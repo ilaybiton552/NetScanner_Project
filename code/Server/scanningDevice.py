@@ -129,32 +129,33 @@ def handle_packet(packet):
     :param packet: the filtered packet
     :return: None
     """
-    # if DNS packet - check for DNS poisoning
-    if DNS in packet:
-        if is_dns_poisoning(packet):
-            print("DNS Attack detected")
-    # if ARP packet - check for ARP spoofing attack
-    elif ARP in packet:
-        packet_ip = packet[ARP].psrc
-        packet_mac = packet[ARP].hwsrc
-        answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
-        if answer is not NoneType:
-            if ARP in answer:
-                real_mac = answer[ARP].hwsrc
-                if real_mac is not None and real_mac != packet_mac:
-                    print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-    # if ICMP packet - check for SMURF attack
-    elif ICMP in packet:
-        check = is_smurf_attack(packet)
-        if check[0]:
-            print(f"SMURF attack detected! Attacker - {check[1]}")
-    # if TCP packet - check for SYN Flood attack
-    elif TCP in packet:
-        check = is_syn_flood_attack(packet)
-        if check[0]:
-            print(f"SYN Flood attack detected! Attacker - {check[1]}")
-
-
+    try:
+        # if DNS packet - check for DNS poisoning
+        if DNS in packet:
+            if is_dns_poisoning(packet):
+                print("DNS Attack detected")
+        # if ARP packet - check for ARP spoofing attack
+        elif ARP in packet:
+            packet_ip = packet[ARP].psrc
+            packet_mac = packet[ARP].hwsrc
+            answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
+            if answer is not NoneType:
+                if ARP in answer:
+                    real_mac = answer[ARP].hwsrc
+                    if real_mac is not None and real_mac != packet_mac:
+                        print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+        # if ICMP packet - check for SMURF attack
+        elif ICMP in packet:
+            check = is_smurf_attack(packet)
+            if check[0]:
+                print(f"SMURF attack detected! Attacker - {check[1]}")
+        # if TCP packet - check for SYN Flood attack
+        elif TCP in packet:
+            check = is_syn_flood_attack(packet)
+            if check[0]:
+                print(f"SYN Flood attack detected! Attacker - {check[1]}")
+    except Exception:
+        pass
     print(packet.summary())
 
 
@@ -187,6 +188,22 @@ class Sniffer(Thread):
                (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
                (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET) or \
                (self.smurf and ICMP in packet and Ether in packet and packet[Ether].dst == BROADCAST)
+
+    def update(self, dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
+        """
+        Updates the sniffer attacks
+        :param dns_poisoning: bool, check for dns poisoning attacks
+        :param syn_flood: bool, check for syn flood attacks
+        :param arp_spoofing: bool, check for arp spoofing attacks
+        :param smurf: bool, check for smurf attacks
+        :param evil_twin: bool, check for evil twin attacks
+        :return: None
+        """
+        self.dns_poisoning = dns_poisoning
+        self.syn_flood = syn_flood
+        self.arp_spoofing = arp_spoofing
+        self.smurf = smurf
+        self.evil_twin = evil_twin
 
 
 class Network:
@@ -326,6 +343,20 @@ def stop_sniffing():
     sniffer.running = False
     print("[*] Stop sniffing")
     sniffer.join()
+
+
+def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
+    """
+    Updates the sniffer attacks
+    :param dns_poisoning: bool, check for dns poisoning attacks
+    :param syn_flood: bool, check for syn flood attacks
+    :param arp_spoofing: bool, check for arp spoofing attacks
+    :param smurf: bool, check for smurf attacks
+    :param evil_twin: bool, check for evil twin attacks
+    :return: None
+    """
+    sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    print("[*] Update sniffing")
 
 
 def show_available_networks():

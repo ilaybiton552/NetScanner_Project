@@ -12,10 +12,16 @@ function ScanPage(){
     });
 
     const handleCheckboxChange = (attackType) => {
-        setAttacks((prevAttacks) => ({
-            ...prevAttacks,
-            [attackType]: !prevAttacks[attackType]
-        }));
+        setAttacks((prevAttacks) => {
+            const updatedAttacks = {...prevAttacks,
+                [attackType]: !prevAttacks[attackType]
+            };
+            if (!scan) {
+                const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedAttacks)};
+                fetchData('http://localhost:5000/update_scan', options).then(data => document.getElementById("scanningDetails").textContent = data.Message);
+            }
+            return updatedAttacks;
+        });
     };
 
     const scanClick = () => {
