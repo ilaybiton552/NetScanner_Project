@@ -84,7 +84,6 @@ def is_syn_flood_attack(packet):
     return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
 
 
-
 def handle_packet(packet):
     """
     Handles the packet after it got filter (check for an attack)
@@ -210,10 +209,13 @@ class Network:
 
             if iface.status() == pywifi.const.IFACE_CONNECTED:
                 print(f"Successfully connected to {self.ssid}")
+                return True
             else:
                 print(f"Failed to connect to {self.ssid}")
+                return False
         else:
             print(f"Network {self.ssid} not found in scan results")
+            return False
 
 
     def __str__(self):

@@ -28,8 +28,11 @@ def connect_to_network():
         networks = scanningDevice.Network.scan_wifi_networks()
         network = list(filter(lambda network: network.ssid == ssid, networks))
         if network:
-            network[0].connect_to_network(password)
-            return jsonify({'Message': f'Connected successfully to {ssid} with the provided password'})
+            connect = network[0].connect_to_network(password)
+            if(connect):
+                return jsonify({'Message': f'Connected successfully to {ssid} with the provided password'})
+            else:
+                return jsonify({'Message': f'Error with connecting, wrong password'}), 404
         else:
             return jsonify({'Error': f'Network {ssid} not found'}), 404
 
