@@ -10,8 +10,8 @@ import psutil
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
-NUM_SYN_FLOOD_ATTACK_PACKETS = 20
-TIME_BETWEEN_SYN_PACKETS = 5
+NUM_POTENTIAL_SPAM_PACKETS = 20
+TIME_BETWEEN_POTENTIAL_SPAM_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
@@ -70,18 +70,56 @@ def is_dns_poisoning(packet):
     return False
 
 
+def add_ip(ip, sniffer_dict):
+    """
+    Adds the ip of the computer which sent spam packet to the dict
+    :param ip: string, the ip of the computer
+    :param sniffer_dict: dict, the relevant dict of the sniffer for the relevant attack
+    :return: int, the number of times the computer sent spam packet in the last 5 seconds
+    """
+    num_of_times = sniffer_dict.get(ip)
+    # if doesn't exist (never sent TCP SYN packet before)
+    if num_of_times is None:
+        sniffer_dict[ip] = [1, time.perf_counter()]
+        return 1
+
+    num_of_times = num_of_times[0]
+    # if more than 5 seconds without spam attack passed - reset count or already counted as spam attack
+    if time.perf_counter() - sniffer_dict[ip][1] > TIME_BETWEEN_POTENTIAL_SPAM_PACKETS or \
+        num_of_times >= NUM_POTENTIAL_SPAM_PACKETS:
+        num_of_times = 0
+        sniffer_dict[ip] = [1, time.perf_counter()]
+    else:
+        sniffer_dict[ip][0] = num_of_times + 1
+    return num_of_times + 1
+
+
 def is_syn_flood_attack(packet):
     """
     Checks if a SYN Flood attack occurred
     :param packet: TCP SYN packet
-    :return: bool, True - at attack, False - not
+    :return: bool, True - an attack, False - not
     """
     if IP in packet:
         sender_ip = packet[IP].src
     else:  # TCP can only be with IP or IPv6
         sender_ip = packet[IPv6].src
     # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
-    return sniffer.add_ip(sender_ip) >= NUM_SYN_FLOOD_ATTACK_PACKETS, sender_ip
+    return add_ip(sender_ip, sniffer.syn_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
+
+
+def is_smurf_attack(packet):
+    """
+    Checks if a SMURF attack occurred
+    :param packet: ICMP packet
+    :return: bool, True - an attack, False - not
+    """
+    if IP in packet:
+        sender_ip = packet[IP].src
+    else:
+        sender_ip = packet[IPv6].src
+    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
 
 
 def handle_packet(packet):
@@ -90,38 +128,47 @@ def handle_packet(packet):
     :param packet: the filtered packet
     :return: None
     """
-    # if DNS packet - check for DNS poisoning
-    if DNS in packet:
-        if is_dns_poisoning(packet):
-            print("DNS Attack detected")
-    # if ARP packet - check for ARP spoofing attack
-    elif ARP in packet:
-        packet_ip = packet[ARP].psrc
-        packet_mac = packet[ARP].hwsrc
-        answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
-        if answer is not NoneType:
-            if ARP in answer:
-                real_mac = answer[ARP].hwsrc
-                if real_mac is not None and real_mac != packet_mac:
-                    print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-    # if TCP packet - check SYN flood attack
-    elif TCP in packet:
-        check = is_syn_flood_attack(packet)
-        if check[0]:
-            print(f"SYN Flood attack detected! Attacker - {check[1]}")
-
-
+    try:
+        # if DNS packet - check for DNS poisoning
+        if DNS in packet:
+            if is_dns_poisoning(packet):
+                print("DNS Attack detected")
+        # if ARP packet - check for ARP spoofing attack
+        elif ARP in packet:
+            packet_ip = packet[ARP].psrc
+            packet_mac = packet[ARP].hwsrc
+            answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
+            if answer is not NoneType:
+                if ARP in answer:
+                    real_mac = answer[ARP].hwsrc
+                    if real_mac is not None and real_mac != packet_mac:
+                        print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+        # if ICMP packet - check for SMURF attack
+        elif ICMP in packet:
+            check = is_smurf_attack(packet)
+            if check[0]:
+                print(f"SMURF attack detected! Attacker - {check[1]}")
+        # if TCP packet - check for SYN Flood attack
+        elif TCP in packet:
+            check = is_syn_flood_attack(packet)
+            if check[0]:
+                print(f"SYN Flood attack detected! Attacker - {check[1]}")
+    except Exception:
+        pass
     print(packet.summary())
 
 
 class Sniffer(Thread):
-    def __init__(self, dns_poisoning, syn_flood, arp_spoofing):
+    def __init__(self, dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
         self.running = True
         self.dns_poisoning = dns_poisoning
         self.syn_flood = syn_flood
         self.arp_spoofing = arp_spoofing
+        self.smurf = smurf
+        self.evil_twin = evil_twin
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
-        self.start_time = time.perf_counter()  # timer for SYN Flood attack
+        self.icmp_packets = {}  # dict which contains all of the source IP of senders of ICMP packets
+        self.start_time = time.perf_counter()  # timer for SYN Flood and SMURF attacks
         super().__init__()
 
     def run(self):
@@ -138,29 +185,24 @@ class Sniffer(Thread):
         """
         return (self.dns_poisoning and DNS in packet and packet[DNS].an is not None) or \
                (self.syn_flood and TCP in packet and packet[TCP].flags & SYN) or \
-               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET)
+               (self.arp_spoofing and ARP in packet and packet[ARP].op == ARP_ANSWER_PACKET) or \
+               (self.smurf and ICMP in packet and Ether in packet and packet[Ether].dst == BROADCAST)
 
-    def add_ip(self, ip):
+    def update(self, dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
         """
-        Adds the ip of the computer which sent tcp syn packet to the dict
-        :param ip: string, the ip of the computer
-        :return: int, the number of times the computer sent tcp syn packet in the last 10 seconds
+        Updates the sniffer attacks
+        :param dns_poisoning: bool, check for dns poisoning attacks
+        :param syn_flood: bool, check for syn flood attacks
+        :param arp_spoofing: bool, check for arp spoofing attacks
+        :param smurf: bool, check for smurf attacks
+        :param evil_twin: bool, check for evil twin attacks
+        :return: None
         """
-        num_of_times = self.syn_packets.get(ip)
-        # if doesn't exist (never sent TCP SYN packet before)
-        if num_of_times is None:
-            self.syn_packets[ip] = [1, time.perf_counter()]
-            return 1
-
-        num_of_times = num_of_times[0]
-        # if more than 5 seconds without SYN attack passed - reset count or already counted as SYN Flood attack
-        if time.perf_counter() - self.syn_packets[ip][1] > TIME_BETWEEN_SYN_PACKETS or \
-                num_of_times >= NUM_SYN_FLOOD_ATTACK_PACKETS:
-            num_of_times = 0
-            self.syn_packets[ip] = [1, time.perf_counter()]
-        else:
-            self.syn_packets[ip][0] = num_of_times + 1
-        return num_of_times + 1
+        self.dns_poisoning = dns_poisoning
+        self.syn_flood = syn_flood
+        self.arp_spoofing = arp_spoofing
+        self.smurf = smurf
+        self.evil_twin = evil_twin
 
 
 class Network:
@@ -252,27 +294,30 @@ class Network:
             counter = 0
 
             for line in network_info.split('\n'):
-                line = line.strip()
+                try:
+                    line = line.strip()
 
-                if line.startswith("SSID "):
-                    current_network_info = {'ssid': line.split(' : ')[1].strip()}
-                    ssid = current_network_info.get('ssid')
-                    counter = 1
-                elif line.startswith("Network type"):
-                    current_network_info['network_type'] = line.split(':')[-1].strip()
-                    network_type = current_network_info.get('network_type')
-                    counter += 1
-                elif line.startswith("Authentication"):
-                    current_network_info['authentication'] = line.split(':')[-1].strip()
-                    authentication = current_network_info.get("authentication")
-                    counter += 1
-                elif line.startswith("Encryption"):
-                    current_network_info['encryption'] = line.split(':')[-1].strip()
-                    encryption = current_network_info.get('encryption')
-                    counter += 1
-                elif (counter % 4 == 0):
-                    counter = -1
-                    networks.append(Network(ssid, network_type, authentication, encryption))
+                    if line.startswith("SSID "):
+                        current_network_info = {'ssid': line.split(' : ')[1].strip()}
+                        ssid = current_network_info.get('ssid')
+                        counter = 1
+                    elif line.startswith("Network type"):
+                        current_network_info['network_type'] = line.split(':')[-1].strip()
+                        network_type = current_network_info.get('network_type')
+                        counter += 1
+                    elif line.startswith("Authentication"):
+                        current_network_info['authentication'] = line.split(':')[-1].strip()
+                        authentication = current_network_info.get("authentication")
+                        counter += 1
+                    elif line.startswith("Encryption"):
+                        current_network_info['encryption'] = line.split(':')[-1].strip()
+                        encryption = current_network_info.get('encryption')
+                        counter += 1
+                    elif (counter % 4 == 0):
+                        counter = -1
+                        networks.append(Network(ssid, network_type, authentication, encryption))
+                except Exception:  # error in network details (for example, missing SSID)
+                    pass
 
             return networks
         except subprocess.CalledProcessError as e:
@@ -281,13 +326,13 @@ class Network:
             return f"Error: {e}"
 
 
-def start_sniffing(dns_poisoning, syn_flood, arp_spoofing):
+def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     """
     the function activates the sniffing
     :return: None
     """
     global sniffer
-    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing)
+    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     print("[*] Start sniffing...")
     sniffer.start()
 
@@ -300,6 +345,20 @@ def stop_sniffing():
     sniffer.running = False
     print("[*] Stop sniffing")
     sniffer.join()
+
+
+def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
+    """
+    Updates the sniffer attacks
+    :param dns_poisoning: bool, check for dns poisoning attacks
+    :param syn_flood: bool, check for syn flood attacks
+    :param arp_spoofing: bool, check for arp spoofing attacks
+    :param smurf: bool, check for smurf attacks
+    :param evil_twin: bool, check for evil twin attacks
+    :return: None
+    """
+    sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    print("[*] Update sniffing")
 
 
 def show_available_networks():
