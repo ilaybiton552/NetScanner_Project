@@ -95,8 +95,8 @@ def update_scanning():
         if evil_twin:
             msg += "Evil Twin\n"
         return jsonify({"Message": msg})
-    except Exception:
-        return jsonify({"Error":"error"})
+    except Exception as ex:
+        return jsonify({"Error": "error"})
 
 
 def main():
