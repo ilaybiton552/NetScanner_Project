@@ -1,4 +1,5 @@
 from scapy.all import *
+import pywifi
 
 class EvilTwinDetector:
     def __init__(self, interface):
@@ -77,13 +78,3 @@ class EvilTwinDetector:
             print(f"Error detecting channel hopping for {bssid}: {str(e)}")
 
         return False
-
-    def start_sniffing(self):
-        sniff(iface=self.interface, prn=self.handle_beacon, store=0)
-
-if __name__ == "__main__":
-    # Set your wireless interface here (e.g., "wlan0")
-    wireless_interface = "YOUR_WIRELESS_INTERFACE"
-
-    detector = EvilTwinDetector(wireless_interface)
-    detector.start_sniffing()

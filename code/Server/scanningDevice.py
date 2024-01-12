@@ -7,6 +7,7 @@ import time
 import requests
 import os
 import psutil
+import EvilTwin
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -153,6 +154,11 @@ def handle_packet(packet):
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
+        elif packet.haslayer(Dot11Beacon):
+            wifi = pywifi.PyWiFi()
+            iface = wifi.interfaces()[0]
+            detector = EvilTwinDetector(iface)
+            detector.handle_beacon(packet)
     except Exception:
         pass
     print(packet.summary())
