@@ -63,7 +63,6 @@ class EvilTwinDetector:
                     encrypted = True
         except Exception as e:
             print(f"Error checking encryption for {bssid}: {str(e)}")
-
         return encrypted
 
     def channel_hopping_detected(self, bssid, current_channel):
