@@ -31,12 +31,19 @@ def get_wireless_interfaces():
 
 def enable_monitor_mode(interface):
     try:
-        # Run the command to enable monitor mode
-        os.system(f"sudo iw dev {interface} set type monitor")
-        print(f"Monitor mode enabled on {interface}")
-    except Exception as e:
-        print(f"Error: {e}")
-
+        # Check if the interface is up
+        subprocess.check_call(['ip', 'link', 'set', interface, 'down'])
+        
+        # Set monitor mode
+        subprocess.check_call(['iw', interface, 'set', 'monitor', 'none'])
+        
+        # Bring the interface up
+        subprocess.check_call(['ip', 'link', 'set', interface, 'up'])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to set monitor mode: {e}")
+        return False
+    return True
+    
 
 def turn_on_monitor_mode():
     # Get the list of wireless interfaces
