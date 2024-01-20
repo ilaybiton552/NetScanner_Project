@@ -1,6 +1,9 @@
 from scapy.all import *
 import pywifi
 
+SIGNAL_STRENGTH_THRESHOLD = 10
+SIGNAL_CHANGE_THRESHOLD = 20
+
 class EvilTwinDetector:
     def __init__(self, interface):
         self.interface = interface
@@ -16,29 +19,35 @@ class EvilTwinDetector:
             self.update_access_points(bssid, ssid, channel, signal_strength)
 
     def update_access_points(self, bssid, ssid, channel, signal_strength):
-        if bssid not in self.access_points:
-            self.access_points[bssid] = {'SSID': ssid, 'Channel': channel, 'SignalStrength': signal_strength}
-        else:
-            # Update the information if the access point is already known
-            self.access_points[bssid]['SSID'] = ssid
-            self.access_points[bssid]['Channel'] = channel
-            self.access_points[bssid]['SignalStrength'] = signal_strength
+        if ssid not in self.access_points:
+            self.access_points[ssid] = []
+        self.access_points[ssid].append({
+            'bssid': bssid,
+            'channel': channel,
+            'signal_strength': signal_strength
+        })
 
     def detect_evil_twin(self):
-        for bssid, info in self.access_points.items():
-            ssid = info['SSID']
-            channel = info['Channel']
-            signal_strength = info['SignalStrength']
-
-            # Advanced approach 1: Identify open networks (no encryption) posing as secured networks
-            if ssid.startswith("SecuredNetwork") and not self.is_network_encrypted(bssid):
-                print(f"Possible Evil Twin detected - Open network posing as secured - BSSID: {bssid}, SSID: {ssid}, Channel: {channel}, Signal Strength: {signal_strength} dBm")
-
-            # Advanced approach 2: Detect changes in channel over a short period (possible hopping Evil Twin)
-            if self.channel_hopping_detected(bssid, channel):
-                print(f"Possible Evil Twin detected - Channel hopping - BSSID: {bssid}, SSID: {ssid}, Channel: {channel}, Signal Strength: {signal_strength} dBm")
-
-            # Add more advanced approaches as needed...
+        for ssid, access_points in self.access_points.items():
+            if len(access_points) > 1:
+                print(f"Possible Evil Twin detected! SSID: {ssid}")
+                for ap in access_points:
+                    print(f"BSSID: {ap['bssid']}, Channel: {ap['channel']}, Signal Strength: {ap['signal_strength']}")
+            
+            # Check for identical BSSIDs
+            bssids = [ap['bssid'] for ap in access_points]
+            if len(bssids) != len(set(bssids)):
+                print(f"Possible Evil Twin detected! Identical BSSIDs for SSID: {ssid}")
+            
+            # Check for signal strength
+            signal_strengths = [ap['signal_strength'] for ap in access_points]
+            if max(signal_strengths) - min(signal_strengths) > SIGNAL_STRENGTH_THRESHOLD:
+                print(f"Possible Evil Twin detected! Large difference in signal strength for SSID: {ssid}")
+            
+            # Check for sudden changes in signal strength
+            for i in range(1, len(signal_strengths)):
+                if signal_strengths[i] - signal_strengths[i-1] > SIGNAL_CHANGE_THRESHOLD:
+                    print(f"Possible Evil Twin detected! Sudden change in signal strength for SSID: {ssid}")
 
     def is_network_encrypted(self, bssid):
         encrypted = False
