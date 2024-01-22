@@ -1,13 +1,67 @@
 from scapy.all import *
 import pywifi
+import logging
 
 SIGNAL_STRENGTH_THRESHOLD = 10
 SIGNAL_CHANGE_THRESHOLD = 20
 
+
 class EvilTwinDetector:
-    def __init__(self, interface):
-        self.interface = interface
+    def __init__(self):
         self.access_points = {}
+        self.interface = 'wlan0'
+        self.logger = logging.getLogger('EvilTwinDetector')
+        self.logger.setLevel(logging.INFO)
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+    def detect_evil_twin(self):
+        for ssid, access_points in self.access_points.items():
+            if self.detect_multiple_ap(ssid, access_points):
+                self.logger.warning(f"Possible Evil Twin detected! SSID: {ssid}")
+            if self.detect_identical_bssid(ssid, access_points):
+                self.logger.warning(f"Possible Evil Twin detected! Identical BSSIDs for SSID: {ssid}")
+            if self.detect_signal_strength(ssid, access_points):
+                self.logger.warning(f"Possible Evil Twin detected! Large difference in signal strength for SSID: {ssid}")
+            if self.detect_sudden_signal_change(ssid, access_points):
+                self.logger.warning(f"Possible Evil Twin detected! Sudden change in signal strength for SSID: {ssid}")
+
+    def detect_multiple_ap(self, ssid, access_points):
+        if len(access_points) > 1:
+            for ap in access_points:
+                self.logger.info(f"BSSID: {ap['bssid']}, Channel: {ap['channel']}, Signal Strength: {ap['signal_strength']}")
+            return True
+        return False
+
+    def detect_identical_bssid(self, ssid, access_points):
+        bssids = [ap['bssid'] for ap in access_points]
+        return len(bssids) != len(set(bssids))
+
+    def detect_signal_strength(self, ssid, access_points):
+        signal_strengths = [ap['signal_strength'] for ap in access_points]
+        return max(signal_strengths) - min(signal_strengths) > SIGNAL_STRENGTH_THRESHOLD
+
+    def detect_sudden_signal_change(self, ssid, access_points):
+        signal_strengths = [ap['signal_strength'] for ap in access_points]
+        for i in range(1, len(signal_strengths)):
+            if signal_strengths[i] - signal_strengths[i-1] > SIGNAL_CHANGE_THRESHOLD:
+                return True
+        return False
+
+    def is_network_encrypted(self, bssid):
+        encrypted = False
+        try:
+            probe_req = RadioTap()/Dot11(type=0, subtype=4, addr1="ff:ff:ff:ff:ff:ff", addr2=RandMAC(), addr3=bssid)/Dot11ProbeReq()
+            probe_res = srp1(probe_req, iface=self.interface, timeout=1)
+            if probe_res and probe_res.haslayer(Dot11Elt):
+                rsne = probe_res[Dot11Elt][Dot11Elt][2]
+                if rsne == b'\x30\x18\x01\x00\x00\x0f\xac\x02\x02\x00\x00\x0f\xac\x04\x00\x0f\xac\x02\x01\x00\x00\x0f\xac\x02\x04\x00':
+                    encrypted = True
+        except Exception as e:
+            self.logger.error(f"Error checking encryption for BSSID {bssid}: {e}")
+        return encrypted
 
     def handle_beacon(self, packet):
         if packet.haslayer(Dot11Beacon):
@@ -27,43 +81,6 @@ class EvilTwinDetector:
             'signal_strength': signal_strength
         })
 
-    def detect_evil_twin(self):
-        for ssid, access_points in self.access_points.items():
-            if len(access_points) > 1:
-                print(f"Possible Evil Twin detected! SSID: {ssid}")
-                for ap in access_points:
-                    print(f"BSSID: {ap['bssid']}, Channel: {ap['channel']}, Signal Strength: {ap['signal_strength']}")
-            
-            # Check for identical BSSIDs
-            bssids = [ap['bssid'] for ap in access_points]
-            if len(bssids) != len(set(bssids)):
-                print(f"Possible Evil Twin detected! Identical BSSIDs for SSID: {ssid}")
-            
-            # Check for signal strength
-            signal_strengths = [ap['signal_strength'] for ap in access_points]
-            if max(signal_strengths) - min(signal_strengths) > SIGNAL_STRENGTH_THRESHOLD:
-                print(f"Possible Evil Twin detected! Large difference in signal strength for SSID: {ssid}")
-            
-            # Check for sudden changes in signal strength
-            for i in range(1, len(signal_strengths)):
-                if signal_strengths[i] - signal_strengths[i-1] > SIGNAL_CHANGE_THRESHOLD:
-                    print(f"Possible Evil Twin detected! Sudden change in signal strength for SSID: {ssid}")
-
-    def is_network_encrypted(self, bssid):
-        encrypted = False
-        try:
-            # Send a probe request to the target BSSID and capture the response
-            probe_req = RadioTap()/Dot11(type=0, subtype=4, addr1="ff:ff:ff:ff:ff:ff", addr2=RandMAC(), addr3=bssid)/Dot11ProbeReq()
-            probe_res = srp1(probe_req, iface=self.interface, timeout=1)
-
-            # Check if the response contains the RSN information element
-            if probe_res and probe_res.haslayer(Dot11Elt):
-                rsne = probe_res[Dot11Elt][Dot11Elt][2]
-                if rsne == b'\x30\x18\x01\x00\x00\x0f\xac\x02\x02\x00\x00\x0f\xac\x04\x00\x0f\xac\x02\x01\x00\x00\x0f\xac\x02\x04\x00':
-                    encrypted = True
-        except Exception as e:
-            print(f"Error checking encryption for {bssid}: {str(e)}")
-        return encrypted
 
     def channel_hopping_detected(self, bssid, current_channel):
         try:
