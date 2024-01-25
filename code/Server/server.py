@@ -1,9 +1,11 @@
 import scanningDevice
 from loginRequest import *
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/networks', methods=['GET'])
 def get_available_networks():
@@ -28,8 +30,11 @@ def connect_to_network():
         networks = scanningDevice.Network.scan_wifi_networks()
         network = list(filter(lambda network: network.ssid == ssid, networks))
         if network:
-            network[0].connect_to_network(password)
-            return jsonify({'Message': f'Connected successfully to {ssid} with the provided password'})
+            connect = network[0].connect_to_network(password)
+            if(connect):
+                return jsonify({'Message': f'Connected successfully to {ssid} with the provided password'})
+            else:
+                return jsonify({'Message': f'Error with connecting, wrong password'}), 404
         else:
             return jsonify({'Error': f'Network {ssid} not found'}), 404
 
@@ -37,14 +42,16 @@ def connect_to_network():
         return jsonify({'Error': str(e)}), 500
 
 
-@app.route('/start_scan')
+@app.route('/start_scan', methods=['POST'])
 def start_scanning():
-    args = request.args
-    dns_poisoning = args.get('dns_poisoning', type=bool)
-    syn_flood = args.get('syn_flood', type=bool)
-    arp_spoofing = args.get('arp_spoofing', type=bool)
+    args = request.json
+    dns_poisoning = args.get('dns_poisoning')
+    syn_flood = args.get('syn_flood')
+    arp_spoofing = args.get('arp_spoofing')
+    smurf = args.get('smurf')
+    evil_twin = args.get('evil_twin')
 
-    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing)
+    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     msg = "start scanning for:\n"
     if dns_poisoning:
         msg += "DNS Poisoning\n"
@@ -52,13 +59,44 @@ def start_scanning():
         msg += "SYN Flood\n"
     if arp_spoofing:
         msg += "ARP Spoofing\n"
-    return msg
+    if smurf:
+        msg += "SMURF\n"
+    if evil_twin:
+        msg += "Evil Twin\n"
+    return jsonify({"Message": msg})
 
 
 @app.route('/stop_scan')
 def stop_scanning():
     scanningDevice.stop_sniffing()
-    return "stop scanning"
+    return jsonify({"Message":"stop scanning"})
+
+
+@app.route('/update_scan', methods=['POST'])
+def update_scanning():
+    args = request.json
+    dns_poisoning = args.get('dns_poisoning')
+    syn_flood = args.get('syn_flood')
+    arp_spoofing = args.get('arp_spoofing')
+    smurf = args.get('smurf')
+    evil_twin = args.get('evil_twin')
+
+    try:
+        scanningDevice.update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+        msg = "update scanning for:\n"
+        if dns_poisoning:
+            msg += "DNS Poisoning\n"
+        if syn_flood:
+            msg += "SYN Flood\n"
+        if arp_spoofing:
+            msg += "ARP Spoofing\n"
+        if smurf:
+            msg += "SMURF\n"
+        if evil_twin:
+            msg += "Evil Twin\n"
+        return jsonify({"Message": msg})
+    except Exception as ex:
+        return jsonify({"Error": "error"})
 
 
 def main():
