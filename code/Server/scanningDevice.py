@@ -16,6 +16,8 @@ TIME_BETWEEN_POTENTIAL_SPAM_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
+TYPES = {1: 'A', 5: 'CNAME'}
+AAAA_DNS_TYPE = 28
 
 
 def get_wireless_interfaces():
@@ -69,12 +71,27 @@ def is_dns_poisoning(packet):
     if packet[DNS].qd is None:
         return False
     domain = packet[DNS].qd.qname.decode()[0:-1]
-    packet_ip = packet[DNS].an.rdata
     dns_response = requests.get(DNS_API + domain)
     response_json = dns_response.json()
+    not_supported_type = False
     if response_json.get("status") == DNS_VALID_STATUS:
-        response_ip = response_json.get("records").get('A')[0].get('address')
-        return response_ip != packet_ip
+        response_records = response_json.get("records")
+        for i in range(packet[DNS].ancount):  # go through every answer and check if one is valid
+            try:
+                if packet[DNSRR][i].type != 1 and packet[DNSRR][i].type != 5:  # not supported types
+                    not_supported_type = True
+                answer_type = TYPES[packet[DNSRR][i].type]  # type of answer
+                answer_data = packet[DNSRR][i].rdata  # data of answer
+                if answer_type == TYPES[5]:  # cname - need to decode
+                    answer_data = answer_data.decode()[0:-1]
+                api_answers = response_records.get(answer_type)  # get the answers of the api according to the data
+                for answers in api_answers:  # for every answer of api
+                    if answer_data == answers.get("address"):  # one answer match the dns answer
+                        return False  # not an attack
+            except Exception:
+                pass
+        if not not_supported_type:
+            return True
     return False
 
 
