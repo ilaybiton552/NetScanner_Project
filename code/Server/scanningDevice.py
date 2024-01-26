@@ -147,6 +147,18 @@ def is_smurf_attack(packet):
     return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
 
 
+def get_mac_address(ip_address):
+    """
+    Gets the mac address of a computer (according to its ip address)
+    :param ip_address: the ip address of the computer
+    :return: the mac address of the computer
+    """
+    answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
+    if answer is not NoneType:
+        if ARP in answer:
+            return answer[ARP].hwsrc
+
+
 def handle_packet(packet):
     """
     Handles the packet after it got filter (check for an attack)
@@ -162,12 +174,9 @@ def handle_packet(packet):
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
             packet_mac = packet[ARP].hwsrc
-            answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
-            if answer is not NoneType:
-                if ARP in answer:
-                    real_mac = answer[ARP].hwsrc
-                    if real_mac is not None and real_mac != packet_mac:
-                        print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+            real_mac = get_mac_address(packet_ip)
+            if real_mac is not None and real_mac != packet_mac:
+                print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
