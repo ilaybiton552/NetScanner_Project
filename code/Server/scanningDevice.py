@@ -16,6 +16,7 @@ TIME_BETWEEN_POTENTIAL_SPAM_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
+DETECTOR = EvilTwin.EvilTwinDetector()
 
 
 def get_wireless_interfaces():
@@ -161,11 +162,10 @@ def handle_packet(packet):
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
-        elif packet.haslayer(Dot11Beacon):
-            wifi = pywifi.PyWiFi()
-            iface = wifi.interfaces()[0]
-            detector = EvilTwinDetector(iface)
-            detector.handle_beacon(packet)
+        elif packet.haslayer(Dot11Elt):
+            print("check")
+            DETECTOR.packet_handler(packet)
+            
     except Exception:
         pass
     print(packet.summary())
