@@ -7,7 +7,7 @@ import time
 import requests
 import os
 import psutil
-import EvilTwin
+import evil_twin_detector
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -29,37 +29,6 @@ def get_wireless_interfaces():
                 wireless_interfaces.append(interface)
 
     return wireless_interfaces
-
-
-def enable_monitor_mode(interface):
-    try:
-        # Check if the interface is up
-        subprocess.check_call(['ip', 'link', 'set', interface, 'down'])
-        
-        # Set monitor mode
-        subprocess.check_call(['iw', interface, 'set', 'monitor', 'none'])
-        
-        # Bring the interface up
-        subprocess.check_call(['ip', 'link', 'set', interface, 'up'])
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to set monitor mode: {e}")
-        return False
-    return True
-    
-
-def turn_on_monitor_mode():
-    # Get the list of wireless interfaces
-    wireless_interfaces = get_wireless_interfaces()
-
-    if wireless_interfaces:
-        print("Wireless Interfaces:")
-        for interface in wireless_interfaces:
-            print(interface)
-
-        # Enable monitor mode on the first wireless interface
-        enable_monitor_mode(wireless_interfaces[0])
-    else:
-        print("No wireless interfaces found.")
 
 
 def is_dns_poisoning(packet):
@@ -187,11 +156,9 @@ def handle_packet(packet):
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
-        elif packet.haslayer(Dot11Beacon):
-            wifi = pywifi.PyWiFi()
-            iface = wifi.interfaces()[0]
-            detector = EvilTwinDetector(iface)
-            detector.handle_beacon(packet)
+        elif packet.haslayer(Dot11):
+            # add here the needed code
+
     except Exception:
         pass
     print(packet.summary())
@@ -251,6 +218,7 @@ class Network:
         self.authentication = authentication
         self.encryption = encryption
 
+
     def connect_to_network(self, password):
         """
         Connects to a WiFi network using pywifi.
@@ -302,8 +270,10 @@ class Network:
     def __str__(self):
         return f"SSID: {self.ssid} Network type: {self.network_type} Authentication: {self.authentication} Encryption: {self.encryption}"
 
+
     def to_dict(self):
         return {'ssid': self.ssid, 'network_type': self.network_type, 'authentication': self.authentication, 'encryption': self.encryption}
+
 
     @staticmethod
     def scan_wifi_networks():
