@@ -18,6 +18,7 @@ ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
 TYPES = {1: 'A', 5: 'CNAME'}
 AAAA_DNS_TYPE = 28
+BLOCK_MAC_SCRIPT = "./block_mac.sh"
 
 
 def get_wireless_interfaces():
@@ -108,12 +109,21 @@ def is_smurf_attack(packet):
     :param packet: ICMP packet
     :return: bool, True - an attack, False - not
     """
-    if IP in packet:
-        sender_ip = packet[IP].src
-    else:
-        sender_ip = packet[IPv6].src
+    sender_ip = get_ip_address_from_packet(packet)
     # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
     return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
+
+
+def get_ip_address_from_packet(packet):
+    """
+    Gets the ip address from a packet
+    :param packet: the packet that has potential for attack
+    :return: the ip address of the sender
+    """
+    if IP in packet:
+        return packet[IP].src
+    elif IPv6 in packet:
+        return packet[IPv6].src
 
 
 def get_mac_address(ip_address):
@@ -126,6 +136,15 @@ def get_mac_address(ip_address):
     if answer is not NoneType:
         if ARP in answer:
             return answer[ARP].hwsrc
+        
+
+def block_computer(mac_address):
+    """
+    Blocks the mac address of the computer attacker
+    :param mac_address: the mac address of the computer
+    :return: None
+    """
+    subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
 
 
 def handle_packet(packet):
@@ -139,6 +158,7 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 print("DNS Attack detected")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
@@ -146,19 +166,22 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 print(f"SMURF attack detected! Attacker - {check[1]}")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         elif packet.haslayer(Dot11):
             # add here the needed code
-
+            pass
     except Exception:
         pass
     print(packet.summary())
