@@ -158,6 +158,7 @@ def handle_packet(packet):
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
         elif packet.haslayer(Dot11):
             # add here the needed code
+            print("evil twin")
 
     except Exception:
         pass
