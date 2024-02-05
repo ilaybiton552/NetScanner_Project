@@ -110,7 +110,7 @@ def is_smurf_attack(packet):
     :return: bool, True - an attack, False - not
     """
     sender_ip = get_ip_address_from_packet(packet)
-    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    # computer sent more than 20 ping packets in the last 5 seconds - smurf attack
     return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
 
 
@@ -132,10 +132,10 @@ def get_mac_address(ip_address):
     :param ip_address: the ip address of the computer
     :return: the mac address of the computer
     """
+    print("in mac")
     answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
-    if answer is not NoneType:
-        if ARP in answer:
-            return answer[ARP].hwsrc
+    if ARP in answer:
+        return answer[ARP].hwsrc
         
 
 def block_computer(mac_address):
