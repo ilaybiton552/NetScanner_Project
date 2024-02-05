@@ -29,8 +29,7 @@ class EvilTwin(Thread):
                 bssid = packet.addr3
                 print(f"Network detected: {ssid} ({bssid})")
                 if ssid in self.networks:
-                    if bssid != self.networks[ssid]:
-                        self.networks[ssid].append(bssid)
+                    if bssid != self.networks[ssid][0]:
                         print(f"Warning: Multiple access points detected for network '{ssid}'. This could be an evil twin attack.")
                 else:
                     self.networks[ssid] = [bssid]
