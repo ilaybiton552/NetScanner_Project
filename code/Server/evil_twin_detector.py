@@ -9,11 +9,15 @@ class EvilTwin(Thread):
         Thread.__init__(self)
         self.interface = interface
         self.networks = {}
+        self.running = True
 
     def run(self):
         self.enable_monitor_mode()
+        self.exc = None
         try:
-            sniff(iface=self.interface, prn=self.handle_packet)
+            sniff(iface=self.interface, prn=self.handle_packet, stop_filter=self.stop)
+        except Exception as ex:
+            self.exc = ex
         finally:
             if (self.interface != "mon0"):
                 self.disable_monitor_mode()
@@ -21,6 +25,11 @@ class EvilTwin(Thread):
     
     def join(self):
         Thread.join(self)
+        if self.exc:
+            raise self.exc
+
+    def stop(self, packet):
+        return not self.running
 
     def handle_packet(self, packet):
         if packet.haslayer(Dot11):
@@ -49,11 +58,10 @@ class EvilTwin(Thread):
 
 if __name__ == "__main__":
     interfaces = netifaces.interfaces()
-    print("Available network interfaces:", interfaces)
+    print("Available network interfaces:", interfaces[1])
     interface = input("Enter network interface to use: ")
     try:
         evil_twin_detector = EvilTwin(interface)
-        evil_twin_detector.daemon = True 
         evil_twin_detector.start()
         evil_twin_detector.join()
 
