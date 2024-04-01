@@ -28,3 +28,5 @@ if networks:
     print("Available networks:")
     for network in networks:
         print(network)
+else: 
+    print("Available networks not found")

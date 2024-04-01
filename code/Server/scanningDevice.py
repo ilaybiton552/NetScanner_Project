@@ -7,7 +7,8 @@ import time
 import requests
 import os
 import psutil
-import EvilTwin
+import evil_twin_detector
+import netifaces
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -16,6 +17,9 @@ TIME_BETWEEN_POTENTIAL_SPAM_PACKETS = 5
 DNS_VALID_STATUS = "OK"
 ARP_ANSWER_PACKET = 2
 BROADCAST = "ff:ff:ff:ff:ff:ff"
+TYPES = {1: 'A', 5: 'CNAME'}
+AAAA_DNS_TYPE = 28
+BLOCK_MAC_SCRIPT = "./block_mac.sh"
 
 
 def get_wireless_interfaces():
@@ -29,37 +33,6 @@ def get_wireless_interfaces():
     return wireless_interfaces
 
 
-def enable_monitor_mode(interface):
-    try:
-        # Check if the interface is up
-        subprocess.check_call(['ip', 'link', 'set', interface, 'down'])
-        
-        # Set monitor mode
-        subprocess.check_call(['iw', interface, 'set', 'monitor', 'none'])
-        
-        # Bring the interface up
-        subprocess.check_call(['ip', 'link', 'set', interface, 'up'])
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to set monitor mode: {e}")
-        return False
-    return True
-    
-
-def turn_on_monitor_mode():
-    # Get the list of wireless interfaces
-    wireless_interfaces = get_wireless_interfaces()
-
-    if wireless_interfaces:
-        print("Wireless Interfaces:")
-        for interface in wireless_interfaces:
-            print(interface)
-
-        # Enable monitor mode on the first wireless interface
-        enable_monitor_mode(wireless_interfaces[0])
-    else:
-        print("No wireless interfaces found.")
-
-
 def is_dns_poisoning(packet):
     """
     Checks if a packet is a DNS Poisoning attack
@@ -69,12 +42,27 @@ def is_dns_poisoning(packet):
     if packet[DNS].qd is None:
         return False
     domain = packet[DNS].qd.qname.decode()[0:-1]
-    packet_ip = packet[DNS].an.rdata
     dns_response = requests.get(DNS_API + domain)
     response_json = dns_response.json()
+    not_supported_type = False
     if response_json.get("status") == DNS_VALID_STATUS:
-        response_ip = response_json.get("records").get('A')[0].get('address')
-        return response_ip != packet_ip
+        response_records = response_json.get("records")
+        for i in range(packet[DNS].ancount):  # go through every answer and check if one is valid
+            try:
+                if packet[DNSRR][i].type != 1 and packet[DNSRR][i].type != 5:  # not supported types
+                    not_supported_type = True
+                answer_type = TYPES[packet[DNSRR][i].type]  # type of answer
+                answer_data = packet[DNSRR][i].rdata  # data of answer
+                if answer_type == TYPES[5]:  # cname - need to decode
+                    answer_data = answer_data.decode()[0:-1]
+                api_answers = response_records.get(answer_type)  # get the answers of the api according to the data
+                for answers in api_answers:  # for every answer of api
+                    if answer_data == answers.get("address"):  # one answer match the dns answer
+                        return False  # not an attack
+            except Exception:
+                pass
+        if not not_supported_type:
+            return True
     return False
 
 
@@ -122,12 +110,42 @@ def is_smurf_attack(packet):
     :param packet: ICMP packet
     :return: bool, True - an attack, False - not
     """
-    if IP in packet:
-        sender_ip = packet[IP].src
-    else:
-        sender_ip = packet[IPv6].src
-    # computer sent more than 20 tcp syn packets in the last 5 seconds - syn flood attack
+    sender_ip = get_ip_address_from_packet(packet)
+    # computer sent more than 20 ping packets in the last 5 seconds - smurf attack
     return add_ip(sender_ip, sniffer.icmp_packets) >= NUM_POTENTIAL_SPAM_PACKETS, sender_ip
+
+
+def get_ip_address_from_packet(packet):
+    """
+    Gets the ip address from a packet
+    :param packet: the packet that has potential for attack
+    :return: the ip address of the sender
+    """
+    if IP in packet:
+        return packet[IP].src
+    elif IPv6 in packet:
+        return packet[IPv6].src
+
+
+def get_mac_address(ip_address):
+    """
+    Gets the mac address of a computer (according to its ip address)
+    :param ip_address: the ip address of the computer
+    :return: the mac address of the computer
+    """
+    print("in mac")
+    answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
+    if ARP in answer:
+        return answer[ARP].hwsrc
+        
+
+def block_computer(mac_address):
+    """
+    Blocks the mac address of the computer attacker
+    :param mac_address: the mac address of the computer
+    :return: None
+    """
+    subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
 
 
 def handle_packet(packet):
@@ -141,31 +159,31 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 print("DNS Attack detected")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
             packet_mac = packet[ARP].hwsrc
-            answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=packet_ip), timeout=2, verbose=False)
-            if answer is not NoneType:
-                if ARP in answer:
-                    real_mac = answer[ARP].hwsrc
-                    if real_mac is not None and real_mac != packet_mac:
-                        print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+            real_mac = get_mac_address(packet_ip)
+            if real_mac is not None and real_mac != packet_mac:
+                print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 print(f"SMURF attack detected! Attacker - {check[1]}")
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
-        elif packet.haslayer(Dot11Beacon):
-            wifi = pywifi.PyWiFi()
-            iface = wifi.interfaces()[0]
-            detector = EvilTwinDetector(iface)
-            detector.handle_beacon(packet)
+                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
+        elif packet.haslayer(Dot11):
+            # add here the needed code
+            print("evil twin")
+
     except Exception:
         pass
     print(packet.summary())
@@ -225,6 +243,7 @@ class Network:
         self.authentication = authentication
         self.encryption = encryption
 
+
     def connect_to_network(self, password):
         """
         Connects to a WiFi network using pywifi.
@@ -276,8 +295,10 @@ class Network:
     def __str__(self):
         return f"SSID: {self.ssid} Network type: {self.network_type} Authentication: {self.authentication} Encryption: {self.encryption}"
 
+
     def to_dict(self):
         return {'ssid': self.ssid, 'network_type': self.network_type, 'authentication': self.authentication, 'encryption': self.encryption}
+
 
     @staticmethod
     def scan_wifi_networks():
@@ -346,6 +367,19 @@ def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     """
     global sniffer
     sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    if evil_twin == True:
+        print("[*] Starting evil twin detector...")
+        interfaces = netifaces.interfaces()
+        print("Available network interfaces:", interfaces)
+        print("using ", interfaces[1], " interface")
+        interface = interfaces[1]
+        global et_detector
+        try:
+            et_detector = evil_twin_detector.EvilTwin(interface)
+            et_detector.start()
+        except Exception as ex:
+            print("Stopped the sniffing because: ", ex)
+            
     print("[*] Start sniffing...")
     sniffer.start()
 
@@ -356,6 +390,9 @@ def stop_sniffing():
     :return:
     """
     sniffer.running = False
+    if sniffer.evil_twin == True:
+        et_detector.running = False
+        et_detector.join()
     print("[*] Stop sniffing")
     sniffer.join()
 
