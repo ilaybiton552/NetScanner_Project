@@ -7,8 +7,9 @@ import time
 import requests
 import os
 import psutil
-import evil_twin_detector
+#import evil_twin_detector
 import netifaces
+import evil_twin_detector_terminal
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -180,9 +181,7 @@ def handle_packet(packet):
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
                 block_computer(get_mac_address(get_ip_address_from_packet(packet)))
-        elif packet.haslayer(Dot11):
-            # add here the needed code
-            print("evil twin")
+        
 
     except Exception:
         pass
@@ -369,15 +368,11 @@ def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     if evil_twin == True:
         print("[*] Starting evil twin detector...")
-        interfaces = netifaces.interfaces()
-        print("Available network interfaces:", interfaces)
-        print("using ", interfaces[1], " interface")
-        interface = interfaces[1]
-        global et_detector
+
         try:
-            et_detector = evil_twin_detector.EvilTwin(interface)
-            et_detector.start()
+            evil_twin_detector_terminal.starting_evil_twin_detection()
         except Exception as ex:
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
             print("Stopped the sniffing because: ", ex)
             
     print("[*] Start sniffing...")
@@ -391,8 +386,7 @@ def stop_sniffing():
     """
     sniffer.running = False
     if sniffer.evil_twin == True:
-        et_detector.running = False
-        et_detector.join()
+        evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Stop sniffing")
     sniffer.join()
 

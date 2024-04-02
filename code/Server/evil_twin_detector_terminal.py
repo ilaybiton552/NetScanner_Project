@@ -3,6 +3,8 @@ import threading
 import schedule
 import time
 
+stop_threads = False
+
 class AccessPoint:
     def __init__(self, ssid, mac_address):
         self.ssid = ssid
@@ -63,17 +65,21 @@ def job():
     duplicates = [ssid for ssid, count in ssid_counts.items() if count > 1]
     if duplicates:
         print(f"Evil twin detected with SSIDs: {', '.join(duplicates)}")
-    #else:
-    #    print("No duplicate SSIDs found.")
 
-def main():
+
+def main_thread_job(stop_threads):
     schedule.every(10).seconds.do(job)
 
-    while True:
+    while stop_threads:
         schedule.run_pending()
         time.sleep(1)
 
-if __name__ == "__main__":
-    main_thread = threading.Thread(target=main)
+def starting_evil_twin_detection():
+    stop_threads = False
+    main_thread = threading.Thread(target=main_thread_job, args=(lambda: stop_threads(),))
     main_thread.start()
     main_thread.join()
+
+def finishing_evil_twin_detection():
+    stop_threads = True
+    
