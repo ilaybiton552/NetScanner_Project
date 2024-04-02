@@ -139,12 +139,13 @@ def get_mac_address(ip_address):
         return answer[ARP].hwsrc
         
 
-def block_computer(mac_address):
+def block_computer(ip_address):
     """
     Blocks the mac address of the computer attacker
-    :param mac_address: the mac address of the computer
+    :param ip_address: the ip address of the computer
     :return: None
     """
+    mac_address = get_mac_address(ip_address)
     subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
 
 
@@ -159,7 +160,7 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 print("DNS Attack detected")
-                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
+                block_computer(get_ip_address_from_packet(packet))
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
@@ -167,19 +168,19 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
+                block_computer(get_ip_address_from_packet(packet))
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 print(f"SMURF attack detected! Attacker - {check[1]}")
-                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
+                block_computer(get_ip_address_from_packet(packet))
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
-                block_computer(get_mac_address(get_ip_address_from_packet(packet)))
+                block_computer(get_ip_address_from_packet(packet))
         elif packet.haslayer(Dot11):
             # add here the needed code
             print("evil twin")
