@@ -3,7 +3,10 @@ import threading
 import schedule
 import time
 
-stop_threads = False
+
+main_thread = None
+stop_event = None
+
 
 class AccessPoint:
     def __init__(self, ssid, mac_address):
@@ -12,6 +15,7 @@ class AccessPoint:
 
     def __str__(self):
         return f"SSID: {self.ssid}, BSSID: {self.mac_address}"
+    
 
 def to_dict_from_output(output):
     access_points = []
@@ -34,6 +38,7 @@ def to_dict_from_output(output):
         print(access_point)
 
     return access_points
+
 
 def scan_wireless_access_points():
     try:
@@ -67,19 +72,24 @@ def job():
         print(f"Evil twin detected with SSIDs: {', '.join(duplicates)}")
 
 
-def main_thread_job(stop_threads):
+def main_thread_job(stop_event):
     schedule.every(10).seconds.do(job)
 
-    while stop_threads:
+    while not stop_event.is_set():
         schedule.run_pending()
         time.sleep(1)
 
+
 def starting_evil_twin_detection():
-    stop_threads = False
-    main_thread = threading.Thread(target=main_thread_job, args=(lambda: stop_threads(),))
+    global stop_event
+    global main_thread
+    stop_event = threading.Event()
+    main_thread = threading.Thread(target=main_thread_job, args=(stop_event,))
     main_thread.start()
-    main_thread.join()
+
 
 def finishing_evil_twin_detection():
-    stop_threads = True
+    global stop_event
+    if stop_event is not None:
+        stop_event.set()
     

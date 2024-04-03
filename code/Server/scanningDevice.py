@@ -235,6 +235,40 @@ class Sniffer(Thread):
         self.evil_twin = evil_twin
 
 
+
+def to_dict_of_networks_from_output(output):
+        access_points = []
+        lines = output.split('Cell')
+        network_type = None
+        authentication = None
+        encryption = None
+        ssid = None
+        for line in lines:
+            for line in line.split('\n'):
+                if "ESSID" in line:
+                    ssid = line.split()
+                    ssid = ssid[0].split("ESSID:").pop().replace('"', '')
+                elif "Authentication Suites" in line:
+                    authentication = line.split()[4]
+                elif "Version" in line:
+                    network_type = line.split()[2]
+                elif "Group Cipher" in line:
+                    encryption = line.split()[3]
+                if ssid and authentication and network_type and encryption:
+                    if all(char == '\x00' for char in ssid):
+                        ssid = " "
+                    access_points.append(Network(ssid, network_type, authentication, encryption))
+                    ssid = None
+                    authentication = None
+                    network_type = None
+                    encryption = None
+        
+        for access_point in access_points:
+            print(access_point)
+
+        return access_points
+
+
 class Network:
     def __init__(self, ssid, network_type, authentication, encryption):
         self.ssid = ssid
@@ -357,6 +391,25 @@ class Network:
             return f"Error: {e}"
         except ValueError as e:
             return f"Error: {e}"
+    
+
+    @staticmethod
+    def scan_wireless_access_points():
+        try:
+            iwconfig_output = subprocess.check_output(['iwconfig'], universal_newlines=True)
+            interface = next((line.split()[0] for line in iwconfig_output.split('\n') if 'ESSID' in line), None)
+            print("Interface: ", interface)
+
+            if interface:
+                output = subprocess.check_output(['iwlist', interface, 'scan'], universal_newlines=True)
+                # Process the output as needed
+                return to_dict_of_networks_from_output(output)
+            
+            else:
+                print("No wireless interface found.")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e}")
 
 
 def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
@@ -385,7 +438,7 @@ def stop_sniffing():
     :return:
     """
     sniffer.running = False
-    if sniffer.evil_twin == True:
+    if evil_twin_detector_terminal.main_thread.is_alive():
         evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Stop sniffing")
     sniffer.join()
@@ -402,6 +455,15 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     :return: None
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    if evil_twin == True:
+        if evil_twin_detector_terminal.main_thread.is_alive():
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
+            evil_twin_detector_terminal.starting_evil_twin_detection()
+        else:
+            evil_twin_detector_terminal.starting_evil_twin_detection()
+    elif evil_twin == False:
+        if evil_twin_detector_terminal.main_thread.is_alive():
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Update sniffing")
 
 
