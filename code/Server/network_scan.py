@@ -36,6 +36,10 @@ class Computer:
 
     def __str__(self):
         return f"IP: {self.ip}, MAC: {self.mac}, Manufacturer: {self.manufacturer}"
+    
+    
+    def to_dict(self):
+        return {'ip': self.ip, 'mac': self.mac, 'manufacturer': self.manufacturer}
 
 
 def get_network(interface):

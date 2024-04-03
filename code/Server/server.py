@@ -3,7 +3,7 @@ from loginRequest import *
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import platform
-import evil_twin_detector
+import network_scan
 
 
 app = Flask(__name__)
@@ -134,6 +134,16 @@ def update_scanning():
         return jsonify({"Message": msg})
     except Exception as ex:
         return jsonify({"Error": "error"})
+
+
+@app.route('/network_state', methods=['GET'])
+def get_network_state():
+    try:
+        computers = network_scan.get_network_state()
+        computers_dict = [computer.to_dict() for computer in computers]
+        return jsonify(computers_dict)
+    except Exception as e:
+        return jsonify({'Error': str(e)}), 500
 
 
 def main():
