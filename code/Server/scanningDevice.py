@@ -325,6 +325,16 @@ class Network:
             return False
 
 
+
+    def connect_to_wifi(self, password):
+        try:
+            subprocess.run(['nmcli', 'dev', 'wifi', 'connect', self.ssid, 'password', password], check=True)
+            print(f"Connected to {self.ssid}")
+            return True
+        except subprocess.CalledProcessError:
+            print(f"Failed to connect to {self.ssid}")
+            return False
+            
     def __str__(self):
         return f"SSID: {self.ssid} Network type: {self.network_type} Authentication: {self.authentication} Encryption: {self.encryption}"
 

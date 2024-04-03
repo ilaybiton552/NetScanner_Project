@@ -57,7 +57,23 @@ def connect_to_network():
                 return jsonify({'Error': f'Network {ssid} not found'}), 404
             
         elif os_name == "Linux":
-            print("you are using Linux")
+            request_data = request.json
+            ssid = request_data.get('ssid')
+            password = request_data.get('password')
+
+            if not ssid or not password:
+                return jsonify({'error': 'SSID and password are required'})
+
+            networks = scanningDevice.Network.scan_wireless_access_points()
+            network = list(filter(lambda network: network.ssid == ssid, networks))
+            if network:
+                connect = network[0].connect_to_wifi(password)
+                if(connect):
+                    return jsonify({'Message': f'Connected successfully to {ssid} with the provided password'})
+                else:
+                    return jsonify({'Message': f'Error with connecting, wrong password'}), 404
+            else:
+                return jsonify({'Error': f'Network {ssid} not found'}), 404
             
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
