@@ -20,6 +20,8 @@ BROADCAST = "ff:ff:ff:ff:ff:ff"
 TYPES = {1: 'A', 5: 'CNAME'}
 AAAA_DNS_TYPE = 28
 BLOCK_MAC_SCRIPT = "./block_mac.sh"
+BLOCK_IP_SCRIPT = "./block_ip.sh"
+IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
 
 
 def get_wireless_interfaces():
@@ -133,10 +135,15 @@ def get_mac_address(ip_address):
     :param ip_address: the ip address of the computer
     :return: the mac address of the computer
     """
-    print("in mac")
-    answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
-    if ARP in answer:
-        return answer[ARP].hwsrc
+    if bool(re.match(IPV4_REGEX)):  # ipv4 address
+        answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
+        if ARP in answer:
+            return answer[ARP].hwsrc
+    else:  # try ipv6 address
+        answer = sr1(IPv6(dst=target) / ICMPv6ND_NS(tgt=target), timeout=2, verbose=False)
+        if answer and ICMPv6ND_NA in answer and answer[ICMPv6ND_NA].tgt == target and ICMPv6NDOptDstLLAddr in answer:
+            return answer[ICMPv6NDOptDstLLAddr].lladdr
+    return None
         
 
 def block_computer(ip_address):
@@ -145,8 +152,14 @@ def block_computer(ip_address):
     :param ip_address: the ip address of the computer
     :return: None
     """
-    mac_address = get_mac_address(ip_address)
-    subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
+    try:
+        mac_address = get_mac_address(ip_address)
+    except Exception:
+        return None
+    if mac_address is not None:  # success getting mac address
+        subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
+    else:  # blocking ip address - error getting mac address
+        subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
 
 def handle_packet(packet):
