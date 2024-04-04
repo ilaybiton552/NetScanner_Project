@@ -7,8 +7,9 @@ import time
 import requests
 import os
 import psutil
-import evil_twin_detector
+#import evil_twin_detector
 import netifaces
+import evil_twin_detector_terminal
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -194,10 +195,7 @@ def handle_packet(packet):
             if check[0]:
                 print(f"SYN Flood attack detected! Attacker - {check[1]}")
                 block_computer(get_ip_address_from_packet(packet))
-        elif packet.haslayer(Dot11):
-            # add here the needed code
-            print("evil twin")
-
+                
     except Exception:
         pass
     print(packet.summary())
@@ -248,6 +246,40 @@ class Sniffer(Thread):
         self.arp_spoofing = arp_spoofing
         self.smurf = smurf
         self.evil_twin = evil_twin
+
+
+
+def to_dict_of_networks_from_output(output):
+        access_points = []
+        lines = output.split('Cell')
+        network_type = None
+        authentication = None
+        encryption = None
+        ssid = None
+        for line in lines:
+            for line in line.split('\n'):
+                if "ESSID" in line:
+                    ssid = line.split()
+                    ssid = ssid[0].split("ESSID:").pop().replace('"', '')
+                elif "Authentication Suites" in line:
+                    authentication = line.split()[4]
+                elif "Version" in line:
+                    network_type = line.split()[2]
+                elif "Group Cipher" in line:
+                    encryption = line.split()[3]
+                if ssid and authentication and network_type and encryption:
+                    if all(char == '\x00' for char in ssid):
+                        ssid = " "
+                    access_points.append(Network(ssid, network_type, authentication, encryption))
+                    ssid = None
+                    authentication = None
+                    network_type = None
+                    encryption = None
+        
+        for access_point in access_points:
+            print(access_point)
+
+        return access_points
 
 
 class Network:
@@ -306,6 +338,16 @@ class Network:
             return False
 
 
+
+    def connect_to_wifi(self, password):
+        try:
+            subprocess.run(['nmcli', 'dev', 'wifi', 'connect', self.ssid, 'password', password], check=True)
+            print(f"Connected to {self.ssid}")
+            return True
+        except subprocess.CalledProcessError:
+            print(f"Failed to connect to {self.ssid}")
+            return False
+            
     def __str__(self):
         return f"SSID: {self.ssid} Network type: {self.network_type} Authentication: {self.authentication} Encryption: {self.encryption}"
 
@@ -372,6 +414,25 @@ class Network:
             return f"Error: {e}"
         except ValueError as e:
             return f"Error: {e}"
+    
+
+    @staticmethod
+    def scan_wireless_access_points():
+        try:
+            iwconfig_output = subprocess.check_output(['iwconfig'], universal_newlines=True)
+            interface = next((line.split()[0] for line in iwconfig_output.split('\n') if 'ESSID' in line), None)
+            print("Interface: ", interface)
+
+            if interface:
+                output = subprocess.check_output(['iwlist', interface, 'scan'], universal_newlines=True)
+                # Process the output as needed
+                return to_dict_of_networks_from_output(output)
+            
+            else:
+                print("No wireless interface found.")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e}")
 
 
 def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
@@ -383,15 +444,11 @@ def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     if evil_twin == True:
         print("[*] Starting evil twin detector...")
-        interfaces = netifaces.interfaces()
-        print("Available network interfaces:", interfaces)
-        print("using ", interfaces[1], " interface")
-        interface = interfaces[1]
-        global et_detector
+
         try:
-            et_detector = evil_twin_detector.EvilTwin(interface)
-            et_detector.start()
+            evil_twin_detector_terminal.starting_evil_twin_detection()
         except Exception as ex:
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
             print("Stopped the sniffing because: ", ex)
             
     print("[*] Start sniffing...")
@@ -404,9 +461,8 @@ def stop_sniffing():
     :return:
     """
     sniffer.running = False
-    if sniffer.evil_twin == True:
-        et_detector.running = False
-        et_detector.join()
+    if evil_twin_detector_terminal.main_thread.is_alive():
+        evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Stop sniffing")
     sniffer.join()
 
@@ -422,6 +478,15 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     :return: None
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    if evil_twin == True:
+        if evil_twin_detector_terminal.main_thread.is_alive():
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
+            evil_twin_detector_terminal.starting_evil_twin_detection()
+        else:
+            evil_twin_detector_terminal.starting_evil_twin_detection()
+    elif evil_twin == False:
+        if evil_twin_detector_terminal.main_thread.is_alive():
+            evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Update sniffing")
 
 
