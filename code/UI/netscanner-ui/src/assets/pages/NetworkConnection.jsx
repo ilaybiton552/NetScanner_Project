@@ -32,9 +32,9 @@ function NetworkConnection() {
     }
 
     return (
-        <div>
+        <div className="center">
             <h1>List of Networks:</h1>
-            <div className="center" >
+            <div className="center">
                 {state ?
                 <div id="container">
                     <p>Enter Password:</p>
