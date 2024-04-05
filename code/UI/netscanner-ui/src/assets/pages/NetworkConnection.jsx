@@ -2,9 +2,9 @@ import React, {useState, useEffect} from "react";
 import './NetworkConnection.css'
 
 function NetworkConnection() {
-    const [state, setState] = useState();
+    const [state, setState] = useState(false);
     const [ssid, setSSID] = useState();
-    const [networks, setNetworks] = useState(() => fetchData('http://localhost:5000/networks', null));
+    const [networks, setNetworks] = useState([]);
 
     useEffect(() => {
         const fetchNetworkData = async () => {
@@ -16,10 +16,8 @@ function NetworkConnection() {
             }
         };
 
-        if (networks instanceof Promise) {
-            fetchNetworkData();
-        }
-    }, [networks]);
+        fetchNetworkData();
+    }, []);
 
     const openPasswordInput = (ssid) => {
         setState(true);
@@ -34,9 +32,9 @@ function NetworkConnection() {
     }
 
     return (
-        <div>
+        <div className="center">
             <h1>List of Networks:</h1>
-            <div className="center" >
+            <div className="center">
                 {state ?
                 <div id="container">
                     <p>Enter Password:</p>
@@ -48,12 +46,7 @@ function NetworkConnection() {
                     networks.map((network, index) => (
                         <div key={index} id={network.ssid}>
                             <button className="networkDesign" onClick={() => openPasswordInput(network.ssid)}>
-                                <ul>
-                                    <li>Name: {network.ssid}</li>
-                                    <li>Type: {network.network_type}</li>
-                                    <li>Authentication: {network.authentication}</li>
-                                    <li>Encryption: {network.encryption}</li>
-                                </ul>
+                                    {network.ssid}
                             </button>
                             <br />
                         </div>
