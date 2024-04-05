@@ -432,7 +432,7 @@ class Network:
                 print("No wireless interface found.")
 
         except subprocess.CalledProcessError as e:
-            print(f"Error: {e}")
+            print(f"Error scan wireless: {e}")
 
 
 def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):

@@ -29,7 +29,7 @@ def get_available_networks():
             print("Unsupported OS")
             return jsonify({'Error': 'Unsupported OS'}), 500
     except Exception as e:
-        return jsonify({'Error': str(e)}), 500
+        return jsonify({'Error get networks server': str(e)}), 500
 
 
 @app.route('/networks', methods=['POST'])

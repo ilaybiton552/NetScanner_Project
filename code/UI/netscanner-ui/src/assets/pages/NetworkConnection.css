@@ -1,17 +1,15 @@
 .networkDesign {
-    width: 50rem;
+    min-width: 25rem;
     align-items: center ;
-    vertical-align: middle;
-    margin: 1%;
+    margin-top: -150px;
+    margin: 5px;
 }
 
 .center {
-    margin: 0;
     position: absolute;
-    top: 32rem;
     left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0%);
+    margin: 5px;
 }
 
 ul {
@@ -21,4 +19,22 @@ ul {
 ul li {
     font-size: 20px;
     list-style: none;
+}
+
+button {
+    border-radius: 10px;
+    width: 100px;
+    font-size: 20px;
+    margin: 5px;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+input {
+    font-size: 20px;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+p {
+    font-size: 30px;
+    font-family: 'Times New Roman', Times, serif;
 }
