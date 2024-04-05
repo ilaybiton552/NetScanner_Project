@@ -11,7 +11,6 @@ function NetworkConnection() {
             try {
                 const networkData = await fetchData('http://localhost:5000/networks', null);
                 setNetworks(networkData);
-                console.log("Some " + networks)
             } catch (error) {
                 console.error('Error fetching networks:', error);
             }
@@ -47,9 +46,7 @@ function NetworkConnection() {
                     networks.map((network, index) => (
                         <div key={index} id={network.ssid}>
                             <button className="networkDesign" onClick={() => openPasswordInput(network.ssid)}>
-                                <ul>
-                                    <li>Name: {network.ssid}</li>
-                                </ul>
+                                    {network.ssid}
                             </button>
                             <br />
                         </div>
