@@ -279,6 +279,7 @@ def to_dict_of_networks_from_output(output):
         for access_point in access_points:
             print(access_point)
 
+        access_points = list(dict.fromkeys(access_points))  # delete duplicates
         return access_points
 
 
