@@ -24,6 +24,11 @@ BLOCK_MAC_SCRIPT = "./block_mac.sh"
 BLOCK_IP_SCRIPT = "./block_ip.sh"
 IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
 NOTIFY_SCRIPT = "./notify.sh"
+DNS_ATTACK = 1
+ARP_ATTACK = 2
+SMURF_ATTACK = 3
+SYN_ATTACK = 4
+CURR_NET_SCRIPT = "./get_network.sh"
 
 
 def get_wireless_interfaces():
@@ -157,20 +162,28 @@ def get_mac_address(ip_address):
     return None
         
 
-def block_computer(ip_address):
+def handle_attack(packet, type):
     """
-    Blocks the mac address of the computer attacker
-    :param ip_address: the ip address of the computer
+    Handles an attack when occures
+    :param packet: the packet of the attack
+    :param type: the attack type
     :return: None
     """
+    mac_address = None
+    ip_address = get_ip_address_from_packet(packet)
     try:
         mac_address = get_mac_address(ip_address)
     except Exception:
-        return None
-    if mac_address is not None:  # success getting mac address
+        pass
+    
+    # blocking the computer
+    if mac_address is not None:
         subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
     else:  # blocking ip address - error getting mac address
         subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
+
+    current_time = time.ctime(time.localtime())  # current time
+    current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
 
 
 def handle_packet(packet):
@@ -184,7 +197,7 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 notify_computer("DNS Attack detected")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, DNS_ATTACK)
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
@@ -192,19 +205,19 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 notify_computer(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, ARP_ATTACK)
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 notify_computer(f"SMURF attack detected! Attacker - {check[1]}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, SMURF_ATTACK)
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 notify_computer(f"SYN Flood attack detected! Attacker - {check[1]}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, SYN_ATTACK)
                 
     except Exception:
         pass
@@ -476,7 +489,7 @@ def stop_sniffing():
     :return:
     """
     sniffer.running = False
-    if evil_twin_detector_terminal.main_thread.is_alive():
+    if sniffer.evil_twin and evil_twin_detector_terminal.main_thread.is_alive():
         evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Stop sniffing")
     sniffer.join()
@@ -493,13 +506,13 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     :return: None
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
-    if evil_twin == True:
+    if evil_twin:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()
             evil_twin_detector_terminal.starting_evil_twin_detection()
         else:
             evil_twin_detector_terminal.starting_evil_twin_detection()
-    elif evil_twin == False:
+    else:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Update sniffing")
@@ -518,3 +531,15 @@ def show_available_networks():
             print(network.ssid)
     else:
         print(networks)
+
+
+def get_scan_state():
+    """
+    Gets the state of the scanning
+    :return: dict of the scanning state
+    """
+    try:
+        return {"scan": sniffer.running, "attacks": {"dns_poisoning": sniffer.dns_poisoning, "syn_flood": sniffer.syn_flood, "arp_spoofing": sniffer.arp_spoofing,
+                                                 "smurf": sniffer.smurf, "evil_twin": sniffer.evil_twin}}
+    except Exception:
+        return {"scan": False}

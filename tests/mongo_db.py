@@ -3,7 +3,7 @@ import pymongo
 users = None
 scan_results = None
 attacks = None
-blocked_mac = None
+blocked_comp = None
 
 #region User
 class User:
@@ -78,7 +78,7 @@ class Attack:
             {"attack_name": "SYN Flood", "attack_description": "A SYN flood is a form of denial-of-service attack in which an attacker sends a succession of SYN requests to a target's system in an attempt to consume enough server resources to make the system unresponsive to legitimate traffic."}
         ])
 #endregion
-
+      
 #region ScanResult
 class ScanResult:
     def __init__(self, username, security_attack, scan_date, mac_address, ip_address):
@@ -87,25 +87,46 @@ class ScanResult:
         self.scan_date = scan_date
         self.mac_address = mac_address
         self.ip_address = ip_address
-            
+       
     def insert(self):
         scan_results.insert_one({'username': self.username, 'security_attack': self.security_attack, 'scan_date': self.scan_date, 'mac_address': self.mac_address, 'ip_address': self.ip_address})
 
-    def update(self):
-        scan_results.update_one({'username': self.username, 'scan_date': self.scan_date}, {'$set': {'security_attack': self.security_attack, 'mac_address': self.mac_address, 'ip_address': self.ip_address}})
-#endregion  
-      
+    @staticmethod
+    def get_all():
+        return scan_results.find()
+        
+    @staticmethod
+    def get_by_username(username):
+        return scan_results.find({'username': username})
+
+#endregion        
+
+#region BlockedComp
+    class BlockedComp:
+        def __init__(self, mac_address, ip_address, attack):
+            self.mac_address = mac_address
+            self.ip_address = ip_address
+            self.attack = attack
+        
+        def insert(self):
+            blocked_comp.insert_one({'mac_address': self.mac_address, 'ip_address': self.ip_address, 'attack': self.attack})
+        
+        @staticmethod
+        def get_all():
+            return blocked_comp.find()
+#endregion
+
 def create_database():
     global users
     global scan_results
     global attacks
-    global blocked_mac
+    global blocked_comp
     client = pymongo.MongoClient('localhost', 27017)
     db = client.neuraldb
     users = db.users
     scan_results = db.scan_results
     attacks = db.attacks
-    blocked_mac = db.blocked_mac
+    blocked_comp = db.blocked_comp
     Attack.create_collection()
 
 def add_info():
@@ -123,12 +144,12 @@ def add_info():
     scan_result = ScanResult('admin', 'Evil Twin', '2021-09-03', '00:00:00:00:00:02', '23.22.34.2')
     scan_result.insert()
 
-    blocked_mac.insert_many([{ 'mac_address': '00:00:00:00:00:00', 'ip_address': '134.21.46.3', 'attack': 'Evil Twin'}, { 'mac_address': '00:00:00:00:00:01', 'ip_address': '121.21.46.3', 'attack': 'ARP Spoofing' }, { 'mac_address': '00:00:00:00:00:02', 'ip_address': '23.21.46.3', 'attack': 'DNS Poisoning' }])
+    blocked_comp.insert_many([{ 'mac_address': '00:00:00:00:00:00', 'ip_address': '134.21.46.3', 'attack': 'Evil Twin'}, { 'mac_address': '00:00:00:00:00:01', 'ip_address': '121.21.46.3', 'attack': 'ARP Spoofing' }, { 'mac_address': '00:00:00:00:00:02', 'ip_address': '23.21.46.3', 'attack': 'DNS Poisoning' }])
 
 def main():
     create_database()
-    for attack in attacks.find():
-        print(attack)
+    add_info()
+    #use the database here
 
 if __name__ == '__main__':
     main()
