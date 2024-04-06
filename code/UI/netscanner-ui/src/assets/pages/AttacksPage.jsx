@@ -14,7 +14,7 @@ function AttacksPage(){
     }, []);
 
     return (
-        <div>
+        <div className="center">
             <h1>Attacks Details:</h1>
             {wait ? (<p>Loading...</p>) : 
             (

@@ -15,20 +15,22 @@ function NetworkDetails(){
     }, []);
 
     return (
-        <div>
+        <div className="center">
             <h1>Network Details:</h1>
-            {wait ? (<p>Loading...</p>) : 
-            (
-                devices.map((device) => (
-                    <div>
-                        <ul>
-                            <li>IP Address: {device.ip}</li>
-                            <li>Mac Address: {device.mac}</li>
-                            <li>Manufacture: {device.manufacturer}</li>
-                        </ul>
-                    </div>
-                ))
-            ) }
+            <div className="center">
+                {wait ? (<p>Loading...</p>) : 
+                (
+                    devices.map((device) => (
+                        <div>
+                            <ul className="ulStyle">
+                                <li className="liStyle">IP Address: {device.ip}</li>
+                                <li className="liStyle">Mac Address: {device.mac}</li>
+                                <li className="liStyle">Manufacture: {device.manufacturer}</li>
+                            </ul>
+                        </div>
+                    ))
+                ) }
+            </div>
         </div>
     )
 }
