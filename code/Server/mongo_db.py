@@ -37,7 +37,7 @@ class User:
         return False
     
     @staticmethod
-    def check_password(username, password):
+    def login(username, password):
         user = users.find_one({'username': username, 'password': password})
         if user:
             return True
