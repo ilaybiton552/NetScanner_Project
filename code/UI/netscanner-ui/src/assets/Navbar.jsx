@@ -13,6 +13,18 @@ function Navbar() {
         <li>
           <NavLink to="/NetworkConnection">Connect to Network</NavLink>
         </li>
+        <li>
+          <NavLink to="/NetworkDetails">Network Details</NavLink>
+        </li>
+        <li>
+          <NavLink to="/AttacksPage">Attacks</NavLink>
+        </li>
+        <li>
+          <NavLink to="/LoginPage">Login</NavLink>
+        </li>
+        <li>
+          <NavLink to="/SignupPage">Sign Up</NavLink>
+        </li>
       </ul>
       <br/>
     </nav>
