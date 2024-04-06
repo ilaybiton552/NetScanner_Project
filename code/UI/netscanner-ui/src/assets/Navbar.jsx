@@ -19,6 +19,12 @@ function Navbar() {
         <li>
           <NavLink to="/AttacksPage">Attacks</NavLink>
         </li>
+        <li>
+          <NavLink to="/LoginPage">Login</NavLink>
+        </li>
+        <li>
+          <NavLink to="/SignupPage">Sign Up</NavLink>
+        </li>
       </ul>
       <br/>
     </nav>
