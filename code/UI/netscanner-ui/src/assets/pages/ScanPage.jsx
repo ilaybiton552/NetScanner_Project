@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import './ScanPage.css'
 
 function ScanPage(){
@@ -10,6 +10,22 @@ function ScanPage(){
         smurf: false,
         evil_twin: false
     });
+
+    useEffect(() => {
+        const fetchScanState = async () => {
+            const scanState = await fetchData('http://localhost:5000/scan_state', null);
+            setScan(!scanState.scan)
+            console.log(scanState.attacks)
+
+            for (const key in scanState.attacks) {
+                setAttacks(prevAttacks => ({
+                    ...prevAttacks, [key]: scanState.attacks[key]
+                }));
+            }
+        };
+
+        fetchScanState()
+    }, []);
 
     const handleCheckboxChange = (attackType) => {
         setAttacks((prevAttacks) => {
