@@ -23,6 +23,7 @@ AAAA_DNS_TYPE = 28
 BLOCK_MAC_SCRIPT = "./block_mac.sh"
 BLOCK_IP_SCRIPT = "./block_ip.sh"
 IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
+NOTIFY_SCRIPT = "./notify.sh"
 
 
 def get_wireless_interfaces():
@@ -34,6 +35,15 @@ def get_wireless_interfaces():
                 wireless_interfaces.append(interface)
 
     return wireless_interfaces
+
+
+def notify_computer(message):
+    """
+    Notifies the computer
+    :param message: the message to display on the notification
+    :return: None
+    """
+    subprocess.run([NOTIFY_SCRIPT, message])
 
 
 def is_dns_poisoning(packet):
@@ -173,7 +183,7 @@ def handle_packet(packet):
         # if DNS packet - check for DNS poisoning
         if DNS in packet:
             if is_dns_poisoning(packet):
-                print("DNS Attack detected")
+                notify_computer("DNS Attack detected")
                 block_computer(get_ip_address_from_packet(packet))
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
@@ -181,19 +191,19 @@ def handle_packet(packet):
             packet_mac = packet[ARP].hwsrc
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
-                print(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+                notify_computer(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
                 block_computer(get_ip_address_from_packet(packet))
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
-                print(f"SMURF attack detected! Attacker - {check[1]}")
+                notify_computer(f"SMURF attack detected! Attacker - {check[1]}")
                 block_computer(get_ip_address_from_packet(packet))
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
-                print(f"SYN Flood attack detected! Attacker - {check[1]}")
+                notify_computer(f"SYN Flood attack detected! Attacker - {check[1]}")
                 block_computer(get_ip_address_from_packet(packet))
                 
     except Exception:
@@ -276,11 +286,15 @@ def to_dict_of_networks_from_output(output):
                     network_type = None
                     encryption = None
         
+        #  delete duplicates 
+        networks = []
+        seen = set()
         for access_point in access_points:
-            print(access_point)
-
-        access_points = list(dict.fromkeys(access_points))  # delete duplicates
-        return access_points
+            if access_point.ssid not in seen:
+                seen.add(access_point.ssid)
+                networks.append(access_point)
+                print(access_point)
+        return networks
 
 
 class Network:
