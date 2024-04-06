@@ -200,6 +200,7 @@ def register():
 
 def main():
     # Run the server on http://localhost:5000
+    mongo_db.create_database()
     app.run(debug=True)
 
 
