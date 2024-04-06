@@ -157,20 +157,27 @@ def get_mac_address(ip_address):
     return None
         
 
-def block_computer(ip_address):
+def handle_attack(packet, type):
     """
-    Blocks the mac address of the computer attacker
-    :param ip_address: the ip address of the computer
+    Handles an attack when occures
+    :param packet: the packet of the attack
+    :param type: the attack type
     :return: None
     """
+    mac_address = None
+    ip_address = get_ip_address_from_packet(packet)
     try:
         mac_address = get_mac_address(ip_address)
     except Exception:
-        return None
-    if mac_address is not None:  # success getting mac address
+        pass
+    
+    # blocking the computer
+    if mac_address is not None:
         subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
     else:  # blocking ip address - error getting mac address
         subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
+
+    current_time = time.strftime("%H:%M:%S", time.localtime())  # current time
 
 
 def handle_packet(packet):
