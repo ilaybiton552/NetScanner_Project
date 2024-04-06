@@ -3,7 +3,7 @@ import pymongo
 users = None
 scan_results = None
 attacks = None
-blocked_mac = None
+blocked_comp = None
 
 #region User
 class User:
@@ -100,24 +100,38 @@ class Attack:
             return scan_results.find({'username': username})
 
 #endregion        
+
+#region BlockedComp
+    class BlockedComp:
+        def __init__(self, mac_address, ip_address, attack):
+            self.mac_address = mac_address
+            self.ip_address = ip_address
+            self.attack = attack
+        
+        def insert(self):
+            blocked_comp.insert_one({'mac_address': self.mac_address, 'ip_address': self.ip_address, 'attack': self.attack})
+        
+        @staticmethod
+        def get_all():
+            return blocked_comp.find()
+#endregion
+
 def create_database():
     global users
     global scan_results
     global attacks
-    global blocked_mac
+    global blocked_comp
     client = pymongo.MongoClient('localhost', 27017)
     db = client.neuraldb
     users = db.users
     scan_results = db.scan_results
     attacks = db.attacks
-    blocked_mac = db.blocked_mac
+    blocked_comp = db.blocked_comp
     Attack.create_collection()
 
 
 def main():
     create_database()
-    for attack in attacks.find():
-        print(attack)
 
 if __name__ == '__main__':
     main()
