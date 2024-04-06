@@ -146,7 +146,7 @@ def get_network_state():
         return jsonify({'Error': str(e)}), 500
     
 
-@app.rout('/scan_state', methods=['GET'])
+@app.route('/scan_state', methods=['GET'])
 def get_scan_state():
     return jsonify(scanningDevice.get_scan_state())
 

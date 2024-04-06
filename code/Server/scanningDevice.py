@@ -538,5 +538,8 @@ def get_scan_state():
     Gets the state of the scanning
     :return: dict of the scanning state
     """
-    return {"scan": sniffer.running, "attacks": {"dns_poisoning": sniffer.dns_poisoning, "syn_flood": sniffer.syn_flood, "arp_spoofing": sniffer.arp_spoofing,
+    try:
+        return {"scan": sniffer.running, "attacks": {"dns_poisoning": sniffer.dns_poisoning, "syn_flood": sniffer.syn_flood, "arp_spoofing": sniffer.arp_spoofing,
                                                  "smurf": sniffer.smurf, "evil_twin": sniffer.evil_twin}}
+    except Exception:
+        return {"scan": False}
