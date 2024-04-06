@@ -489,7 +489,7 @@ def stop_sniffing():
     :return:
     """
     sniffer.running = False
-    if evil_twin_detector_terminal.main_thread.is_alive():
+    if sniffer.evil_twin and evil_twin_detector_terminal.main_thread.is_alive():
         evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Stop sniffing")
     sniffer.join()
@@ -506,13 +506,13 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     :return: None
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
-    if evil_twin == True:
+    if evil_twin:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()
             evil_twin_detector_terminal.starting_evil_twin_detection()
         else:
             evil_twin_detector_terminal.starting_evil_twin_detection()
-    elif evil_twin == False:
+    else:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()
     print("[*] Update sniffing")
