@@ -24,6 +24,10 @@ BLOCK_MAC_SCRIPT = "./block_mac.sh"
 BLOCK_IP_SCRIPT = "./block_ip.sh"
 IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
 NOTIFY_SCRIPT = "./notify.sh"
+DNS_ATTACK = 1
+ARP_ATTACK = 2
+SMURF_ATTACK = 3
+SYN_ATTACK = 4
 
 
 def get_wireless_interfaces():
@@ -177,7 +181,7 @@ def handle_attack(packet, type):
     else:  # blocking ip address - error getting mac address
         subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
-    current_time = time.strftime("%H:%M:%S", time.localtime())  # current time
+    current_time = time.ctime(time.localtime())  # current time
 
 
 def handle_packet(packet):
@@ -191,7 +195,7 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 notify_computer("DNS Attack detected")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, DNS_ATTACK)
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
@@ -199,19 +203,19 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 notify_computer(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, ARP_ATTACK)
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 notify_computer(f"SMURF attack detected! Attacker - {check[1]}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, SMURF_ATTACK)
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 notify_computer(f"SYN Flood attack detected! Attacker - {check[1]}")
-                block_computer(get_ip_address_from_packet(packet))
+                handle_attack(packet, SYN_ATTACK)
                 
     except Exception:
         pass
