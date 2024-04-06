@@ -144,6 +144,11 @@ def get_network_state():
         return jsonify(computers_dict)
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
+    
+
+@app.rout('/scan_state', methods=['GET'])
+def get_scan_state():
+    return jsonify(scanningDevice.get_scan_state())
 
 
 def main():
