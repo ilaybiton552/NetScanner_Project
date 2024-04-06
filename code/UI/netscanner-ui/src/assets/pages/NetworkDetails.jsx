@@ -2,9 +2,14 @@ import React, {useState, useEffect} from "react";
 import './NetworkDetails.css'
 
 function NetworkDetails(){
+    const [devices, setDevices] = useState([]);
+    const [wait, setWait] = useState(true);
+
     useEffect(() => {
         const fetchNetworkState = async () => {
-            const networkState = fetchData('http://localhost:5000/network_state', null);
+            const networkState = await fetchData('http://localhost:5000/network_state', null);
+            setDevices(networkState)
+            setWait(false)
         };
         fetchNetworkState();
     }, []);
@@ -12,6 +17,18 @@ function NetworkDetails(){
     return (
         <div>
             <h1>Network Details:</h1>
+            {wait ? (<p>Loading...</p>) : 
+            (
+                devices.map((device) => (
+                    <div>
+                        <ul>
+                            <li>IP Address: {device.ip}</li>
+                            <li>Mac Address: {device.mac}</li>
+                            <li>Manufacture: {device.manufacturer}</li>
+                        </ul>
+                    </div>
+                ))
+            ) }
         </div>
     )
 }
