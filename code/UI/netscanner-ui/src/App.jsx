@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './assets/Navbar';
 import ScanPage from './assets/pages/ScanPage';
 import NetworkConnection from './assets/pages/NetworkConnection';
+import NetworkDetails from './assets/pages/NetworkDetails';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home/>} />
           <Route path="/ScanPage" element={<ScanPage/>} />
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
+          <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
         </Routes>
     </Router>
   )

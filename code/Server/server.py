@@ -141,6 +141,7 @@ def get_network_state():
     try:
         computers = network_scan.get_network_state()
         computers_dict = [computer.to_dict() for computer in computers]
+        print(computers_dict)
         return jsonify(computers_dict)
     except Exception as e:
         return jsonify({'Error': str(e)}), 500
