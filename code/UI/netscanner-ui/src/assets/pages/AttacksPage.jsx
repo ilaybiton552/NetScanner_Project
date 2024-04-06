@@ -2,15 +2,16 @@ import React, {useState, useEffect} from "react";
 import './AttacksPage.css'
 
 function AttacksPage(){
+    const [attacks, setAttacks] = useState([]);
     const [wait, setWait] = useState(true);
 
     useEffect(() => {
-        const fetchNetworkState = async () => {
-            const networkState = await fetchData('http://localhost:5000/network_state', null);
-            setDevices(networkState)
+        const fetchAttacks = async () => {
+            const attacksList = await fetchData('http://localhost:5000/all_scan_results', null);
+            setAttacks(attacksList)
             setWait(false)
         };
-        fetchNetworkState();
+        fetchAttacks();
     }, []);
 
     return (
@@ -18,12 +19,12 @@ function AttacksPage(){
             <h1>Attacks Details:</h1>
             {wait ? (<p>Loading...</p>) : 
             (
-                devices.map((device) => (
+                attacks.map((attack) => (
                     <div>
                         <ul>
-                            <li>IP Address: {device.ip}</li>
-                            <li>Mac Address: {device.mac}</li>
-                            <li>Manufacture: {device.manufacturer}</li>
+                            <li>IP Address: {attack}</li>
+                            <li>Mac Address: {attack}</li>
+                            <li>Manufacture: {attack}</li>
                         </ul>
                     </div>
                 ))
