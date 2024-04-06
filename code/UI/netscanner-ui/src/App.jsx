@@ -7,6 +7,7 @@ import Navbar from './assets/Navbar';
 import ScanPage from './assets/pages/ScanPage';
 import NetworkConnection from './assets/pages/NetworkConnection';
 import NetworkDetails from './assets/pages/NetworkDetails';
+import AttacksPage from './assets/pages/AttacksPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/ScanPage" element={<ScanPage/>} />
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
+          <Route path="/AttacksPage" element={<AttacksPage/>}/>
         </Routes>
     </Router>
   )
