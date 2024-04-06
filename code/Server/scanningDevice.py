@@ -28,6 +28,7 @@ DNS_ATTACK = 1
 ARP_ATTACK = 2
 SMURF_ATTACK = 3
 SYN_ATTACK = 4
+CURR_NET_SCRIPT = "./get_network.sh"
 
 
 def get_wireless_interfaces():
@@ -182,6 +183,7 @@ def handle_attack(packet, type):
         subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
     current_time = time.ctime(time.localtime())  # current time
+    current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
 
 
 def handle_packet(packet):
