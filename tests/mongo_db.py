@@ -91,9 +91,13 @@ class Attack:
         def insert(self):
             scan_results.insert_one({'username': self.username, 'security_attack': self.security_attack, 'scan_date': self.scan_date, 'mac_address': self.mac_address, 'ip_address': self.ip_address})
 
-        def update(self):
-            scan_results.update_one({'username': self.username, 'scan_date': self.scan_date}, {'$set': {'security_attack': self.security_attack, 'mac_address': self.mac_address, 'ip_address': self.ip_address}})
-
+        @staticmethod
+        def get_all():
+            return scan_results.find()
+        
+        @staticmethod
+        def get_by_username(username):
+            return scan_results.find({'username': username})
 
 #endregion        
 def create_database():
