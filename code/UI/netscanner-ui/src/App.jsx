@@ -23,14 +23,9 @@ function App() {
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
           <Route path="/AttacksPage" element={<AttacksPage/>}/>
-<<<<<<< HEAD
-          <Route path="/LoginPage" element={<LoginPage/>}/> 
-          <Route path="/SignupPage" element={<SignupPage/>}/>
-=======
           <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged}/>}/>
           <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged}/>}/>
           <Route path="/Logout" element={<Logout setIsLogged={setIsLogged}/>}/>
->>>>>>> 171b45fbc4395be40d85418cc21dd680da84a73a
         </Routes>
     </Router>
   )
