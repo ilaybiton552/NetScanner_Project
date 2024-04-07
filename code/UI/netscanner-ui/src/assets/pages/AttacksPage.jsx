@@ -25,6 +25,10 @@ function AttacksPage({username}){
                 (
                     attacks.map((attack) => (
                         <div>
+                            {attack.security_attack === "Evil Twin" ? (<ul className="ulStyle">
+                                <li className="liStyle">Attack: {attack.security_attack}</li>
+                                <li className="liStyle">Date: {attack.scan_date}</li>
+                            </ul>) :(
                             <ul className="ulStyle">
                                 <li className="liStyle">Attack: {attack.security_attack}</li>
                                 <li className="liStyle">Attacker IP: {attack.ip_address}</li>
@@ -32,6 +36,7 @@ function AttacksPage({username}){
                                 <li className="liStyle">Date: {attack.scan_date}</li>
                                 <li className="liStyle">Network Name: {attack.ssid}</li>
                             </ul>
+                                )}
                         </div>
                     ))
                 ) }

@@ -178,10 +178,10 @@ def handle_attack(packet, type):
         print(ex)
     
     # blocking the computer
-    #if mac_address is not None:
-     #   subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
-    #else:  # blocking ip address - error getting mac address
-     #   subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
+    if mac_address is not None:
+        subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
+    else:  # blocking ip address - error getting mac address
+        subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
     current_time = time.ctime(time.localtime())  # current time
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
@@ -296,7 +296,7 @@ def to_dict_of_networks_from_output(output):
                 elif "Group Cipher" in line:
                     encryption = line.split()[3]
                 if ssid and authentication and network_type and encryption:
-                    if not all(char == '\x00' for char in ssid):
+                    if "\\x00" not in ssid:
                         access_points.append(Network(ssid, network_type, authentication, encryption))
                     else:
                         access_points.append(Network("Hidden Network", network_type, authentication, encryption))
@@ -513,10 +513,7 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     if evil_twin:
-        if evil_twin_detector_terminal.main_thread.is_alive():
-            evil_twin_detector_terminal.finishing_evil_twin_detection()
-            evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
-        else:
+        if not evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
     else:
         if evil_twin_detector_terminal.main_thread.is_alive():
