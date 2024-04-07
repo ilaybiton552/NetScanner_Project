@@ -11,6 +11,7 @@ import psutil
 import netifaces
 import evil_twin_detector_terminal
 import mongo_db
+import notify
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -45,7 +46,10 @@ def notify_computer(message):
     :param message: the message to display on the notification
     :return: None
     """
-    subprocess.run([NOTIFY_SCRIPT, message])
+    try:
+        subprocess.run([NOTIFY_SCRIPT, message])
+    except Exception as ex:
+        print(ex)
 
 
 def is_dns_poisoning(packet):
@@ -148,7 +152,7 @@ def get_mac_address(ip_address):
     :param ip_address: the ip address of the computer
     :return: the mac address of the computer
     """
-    if bool(re.match(IPV4_REGEX)):  # ipv4 address
+    if bool(re.match(IPV4_REGEX, ip_address)):  # ipv4 address
         answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
         if ARP in answer:
             return answer[ARP].hwsrc
@@ -170,14 +174,14 @@ def handle_attack(packet, type):
     ip_address = get_ip_address_from_packet(packet)
     try:
         mac_address = get_mac_address(ip_address)
-    except Exception:
-        pass
+    except Exception as ex:
+        print(ex)
     
     # blocking the computer
-    if mac_address is not None:
-        subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
-    else:  # blocking ip address - error getting mac address
-        subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
+    #if mac_address is not None:
+     #   subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
+    #else:  # blocking ip address - error getting mac address
+     #   subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
     current_time = time.ctime(time.localtime())  # current time
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
@@ -216,7 +220,7 @@ def handle_packet(packet):
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
-                notify_computer(f"SYN Flood attack detected! Attacker - {check[1]}")
+                notify.notify_computer("SYN Flood attack")
                 handle_attack(packet, "SYN Flood")
                 
     except Exception:

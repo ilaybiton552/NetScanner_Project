@@ -3,6 +3,7 @@ import threading
 import schedule
 import time
 import mongo_db
+import notify
 
 NOTIFY_SCRIPT = "./notify.sh"
 main_thread = None
@@ -72,9 +73,9 @@ def job():
     if duplicates:
         msg = f"Evil twin detected with SSIDs: {', '.join(duplicates)}"
         print(msg)
-        subprocess.run([NOTIFY_SCRIPT, msg])
-        current_time = time.ctime(time.localtime())  # current time
-        mongo_db.ScanResult(username, "Evil Twin", current_time, None, None, None).insert()  # insert the attack
+        notify.notify_computer(msg)
+        #current_time = time.ctime(time.localtime())  # current time
+        #mongo_db.ScanResult(username, "Evil Twin", current_time, None, None, None).insert()  # insert the attack
         
 
 def main_thread_job(stop_event):
