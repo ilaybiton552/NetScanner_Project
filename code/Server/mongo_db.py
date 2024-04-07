@@ -81,15 +81,16 @@ class Attack:
       
 #region ScanResult
 class ScanResult:
-    def __init__(self, username, security_attack, scan_date, mac_address, ip_address):
+    def __init__(self, username, security_attack, scan_date, mac_address, ip_address, ssid):
         self.username = username
         self.security_attack = security_attack
         self.scan_date = scan_date
         self.mac_address = mac_address
         self.ip_address = ip_address
+        self.ssid = ssid
        
     def insert(self):
-        scan_results.insert_one({'username': self.username, 'security_attack': self.security_attack, 'scan_date': self.scan_date, 'mac_address': self.mac_address, 'ip_address': self.ip_address})
+        scan_results.insert_one({'username': self.username, 'security_attack': self.security_attack, 'scan_date': self.scan_date, 'mac_address': self.mac_address, 'ip_address': self.ip_address, 'ssid': self.ssid})
 
     @staticmethod
     def get_all():
@@ -137,11 +138,11 @@ def add_info():
     user = User('user2', 'user2@gmail,com', 'user2')
     user.insert()
 
-    scan_result = ScanResult('admin', 'ARP Spoofing', '2021-09-01', '00:00:00:00:00:00', '123.34.5.2')
+    scan_result = ScanResult('admin', 'ARP Spoofing', '2021-09-01', '00:00:00:00:00:00', '123.34.5.2', 'wow')
     scan_result.insert()
-    scan_result = ScanResult('admin', 'DNS Poisoning', '2021-09-02', '00:00:00:00:00:01', '233.23.4.2')
+    scan_result = ScanResult('admin', 'DNS Poisoning', '2021-09-02', '00:00:00:00:00:01', '233.23.4.2', 'cat')
     scan_result.insert()
-    scan_result = ScanResult('admin', 'Evil Twin', '2021-09-03', '00:00:00:00:00:02', '23.22.34.2')
+    scan_result = ScanResult('admin', 'Evil Twin', '2021-09-03', '00:00:00:00:00:02', '23.22.34.2', 'kiko milano')
     scan_result.insert()
 
     blocked_comp.insert_many([{ 'mac_address': '00:00:00:00:00:00', 'ip_address': '134.21.46.3', 'attack': 'Evil Twin'}, { 'mac_address': '00:00:00:00:00:01', 'ip_address': '121.21.46.3', 'attack': 'ARP Spoofing' }, { 'mac_address': '00:00:00:00:00:02', 'ip_address': '23.21.46.3', 'attack': 'DNS Poisoning' }])
@@ -149,6 +150,7 @@ def add_info():
 def main():
     create_database()
     add_info()
+    
     #use the database here
 
 if __name__ == '__main__':
