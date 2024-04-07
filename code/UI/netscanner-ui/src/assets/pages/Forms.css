@@ -27,3 +27,17 @@ p {
     margin-right: 5px;
     text-align: center;
 }
+
+.loginButton {
+    border-radius: 10px;
+    width: 250px;
+    margin: 5px;
+    background-color: #47138b; /* Blue background */
+    color: #ffffff; /* White text */
+    border: none;
+    cursor: pointer;
+}
+
+.loginButton:hover {
+    background-color: #220b40; /* Darker blue when hovered */
+}

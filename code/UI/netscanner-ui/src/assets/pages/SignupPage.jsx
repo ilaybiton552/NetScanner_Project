@@ -32,7 +32,7 @@ function SignupPage({setIsLogged, setUsername}){
                 <input id="pass" type="password"/>
                 <p>Email:</p>
                 <input id="mail"/>
-                <button onClick={signupClick}>Sign up</button>
+                <button className="loginButton"onClick={signupClick}>Sign up</button>
                 <p className="top" id="msg"/>
             </div>
         </div>

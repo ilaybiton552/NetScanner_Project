@@ -29,7 +29,7 @@ function LoginPage({setIsLogged, setUsername}){
                 <input id="username"/>
                 <p>Password:</p>
                 <input id="pass" type="password"/>
-                <button onClick={loginClick}>Login</button>
+                <button className="loginButton" onClick={loginClick}>Login</button>
                 <p className="top" id="msg"/>
             </div>
         </div>

@@ -26,7 +26,7 @@
 }
 
 .mainDiv button {
-    background-color: #007bff; /* Blue background */
+    background-color: #47138b; /* purple background */
     color: white; /* White text */
     border: none; /* Remove border */
     padding: 10px 20px; /* Padding around text */
@@ -40,7 +40,7 @@
 }
 
 .mainDiv button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #220b40; /* Darker purple on hover */
 }
 
 /* Hide the default checkbox */

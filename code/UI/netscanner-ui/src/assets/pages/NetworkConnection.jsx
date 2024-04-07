@@ -39,7 +39,7 @@ function NetworkConnection() {
                 <div id="container">
                     <p>Enter Password:</p>
                     <input type="password" id="input"/> 
-                    <button onClick={connectToNetwork}>Connect</button>
+                    <button className="connectButton" onClick={connectToNetwork}>Connect</button>
                     <p id="connectionStatus"></p>
                 </div> : null}
                 {Array.isArray(networks) ? (
