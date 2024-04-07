@@ -28,7 +28,7 @@ function AttacksPage(){
                                 <li className="liStyle">Attacker IP: {attack.ip_address}</li>
                                 <li className="liStyle">Attacker Mac: {attack.mac_address}</li>
                                 <li className="liStyle">Date: {attack.scan_date}</li>
-                                <li className="liStyle">Network Name: </li>
+                                <li className="liStyle">Network Name: {attack.ssid}</li>
                             </ul>
                         </div>
                     ))
