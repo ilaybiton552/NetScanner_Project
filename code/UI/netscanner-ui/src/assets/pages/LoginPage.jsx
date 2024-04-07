@@ -1,7 +1,10 @@
 import React from "react";
-import './Forms.css'
+import {useNavigate} from "react-router-dom";
+import './Forms.css';
 
 function LoginPage({setIsLogged}){
+    const navigate = useNavigate();
+
     const loginClick = () => {
         const username = document.getElementById("username").value;
         const password = document.getElementById("pass").value;
@@ -12,6 +15,7 @@ function LoginPage({setIsLogged}){
             const {Message, Error} = data;
             if (Message) {
                 setIsLogged(true);
+                navigate("/");
             }
             document.getElementById("msg").textContent = Message || Error});
     }

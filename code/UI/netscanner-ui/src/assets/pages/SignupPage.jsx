@@ -1,7 +1,10 @@
 import React from "react";
+import {useNavigate} from "react-router-dom";
 import './Forms.css'
 
 function SignupPage({setIsLogged}){
+    const navigate = useNavigate();
+
     const signupClick = () => {
         const username = document.getElementById("usrname").value;
         const password = document.getElementById("pass").value;
@@ -13,6 +16,7 @@ function SignupPage({setIsLogged}){
             const {Message, Error} = data;
             if (Message) {
                 setIsLogged(true);
+                navigate("/");
             }
             document.getElementById("msg").textContent = Message || Error});
     }
