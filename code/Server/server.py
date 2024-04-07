@@ -9,8 +9,6 @@ import mongo_db
 app = Flask(__name__)
 CORS(app)
 
-username = None
-
 @app.route('/networks', methods=['GET'])
 def get_available_networks():
     try:
@@ -181,6 +179,7 @@ def get_scan_results_by_username():
 @app.route('/login', methods=['POST'])
 def login():
     request_data = request.json
+    global username
     username = request_data.get('username')
     password = request_data.get('password')
     if not username or not password:
@@ -192,6 +191,7 @@ def login():
 @app.route('/register', methods=['POST'])
 def register():
     request_data = request.json
+    global username
     username = request_data.get('username')
     password = request_data.get('password')
     email = request_data.get('email')
