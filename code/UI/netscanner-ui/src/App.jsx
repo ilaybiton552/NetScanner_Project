@@ -8,19 +8,29 @@ import ScanPage from './assets/pages/ScanPage';
 import NetworkConnection from './assets/pages/NetworkConnection';
 import NetworkDetails from './assets/pages/NetworkDetails';
 import AttacksPage from './assets/pages/AttacksPage';
+import LoginPage from './assets/pages/LoginPage';
+import SignupPage from './assets/pages/SignupPage';
+import Logout from './assets/pages/Logout';
 
 function App() {
+  const [isLogged, setIsLogged] = useState(false);
   return (
     <Router>
-        <Navbar />
+        <Navbar isLogged={isLogged} />
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/ScanPage" element={<ScanPage/>} />
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
           <Route path="/AttacksPage" element={<AttacksPage/>}/>
+<<<<<<< HEAD
           <Route path="/LoginPage" element={<LoginPage/>}/> 
           <Route path="/SignupPage" element={<SignupPage/>}/>
+=======
+          <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged}/>}/>
+          <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged}/>}/>
+          <Route path="/Logout" element={<Logout setIsLogged={setIsLogged}/>}/>
+>>>>>>> 171b45fbc4395be40d85418cc21dd680da84a73a
         </Routes>
     </Router>
   )

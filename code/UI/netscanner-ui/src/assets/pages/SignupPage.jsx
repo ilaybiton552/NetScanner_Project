@@ -1,10 +1,10 @@
 import React from "react";
 import './Forms.css'
 
-function LoginPage({setIsLogged}){
+function SignupPage({setIsLogged}){
     return (
         <div className="center">
-            <h1>Login Page:</h1>
+            <h1>Sign Up Page:</h1>
             <div className="center">
                 <p>Username:</p>
                 <input id="username"/>
@@ -28,4 +28,4 @@ async function fetchData(url, options) {
     }
 }
 
-export default LoginPage;
+export default SignupPage;

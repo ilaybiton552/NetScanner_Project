@@ -1,12 +1,12 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import "./Navbar.css"
 
-function Navbar() {
+function Navbar({isLogged}) {
   return (
     <nav>
       <Link to="/" className='title'>Home</Link>
-      <ul>
+      {isLogged ? (<ul>
         <li>
           <NavLink to="/ScanPage">Scan</NavLink>
         </li>
@@ -20,12 +20,16 @@ function Navbar() {
           <NavLink to="/AttacksPage">Attacks</NavLink>
         </li>
         <li>
+          <NavLink to="/Logout">Logout</NavLink>
+        </li>
+        </ul>) : (<ul>
+          <li>
           <NavLink to="/LoginPage">Login</NavLink>
         </li>
         <li>
           <NavLink to="/SignupPage">Sign Up</NavLink>
         </li>
-      </ul>
+        </ul>)}
       <br/>
     </nav>
   )
