@@ -214,7 +214,7 @@ def handle_packet(packet):
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
-                notify_computer(f"SMURF attack detected! Attacker - {check[1]}")
+                notify_computer(f"SMURF attack detected!")
                 handle_attack(packet, "SMURF")
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
