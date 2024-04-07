@@ -6,7 +6,8 @@ function Logout({ setIsLogged }){
 
     useEffect(() => {
         setIsLogged(false);
-        navigate("/")
+        fetchData('http://localhost:5000/stop_scan', null);
+        navigate("/");
     })
 
     return (
@@ -14,6 +15,19 @@ function Logout({ setIsLogged }){
             <h1>Logout</h1>
         </div>
     )
+}
+
+async function fetchData(url, options) {
+    try {
+        let response = await fetch(url, options);
+        const data = await response.json();
+        console.log(data);
+        return data;
+    }
+    catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
+    }
 }
 
 export default Logout;

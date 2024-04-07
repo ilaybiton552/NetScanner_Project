@@ -465,13 +465,13 @@ class Network:
             print(f"Error scan wireless: {e}")
 
 
-def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
+def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin, username):
     """
     the function activates the sniffing
     :return: None
     """
     global sniffer
-    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    sniffer = Sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin, username)
     if evil_twin == True:
         print("[*] Starting evil twin detector...")
 
