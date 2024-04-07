@@ -33,8 +33,6 @@ function SignupPage({setIsLogged}){
                 <p>Email:</p>
                 <input id="mail"/>
                 <button onClick={signupClick}>Sign up</button>
-            </div>
-            <div className="center">
                 <p className="top" id="msg"/>
             </div>
         </div>
