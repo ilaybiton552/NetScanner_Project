@@ -192,11 +192,12 @@ def register():
     request_data = request.json
     username = request_data.get('username')
     password = request_data.get('password')
+    email = request_data.get('email')
     if not username or not password:
         return jsonify({'Error': 'Username and password are required'})
     if mongo_db.User.check_duplicate(username):
         return jsonify({'Error': 'Username already exists'})
-    user = mongo_db.User(username, password)
+    user = mongo_db.User(username, email, password)
     user.insert()
     return jsonify({'Message': 'User created successfully'})
     

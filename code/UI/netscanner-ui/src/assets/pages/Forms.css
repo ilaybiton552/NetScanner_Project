@@ -20,3 +20,11 @@ p {
     margin-left: 5px;
     margin-right: 5px;
 }
+
+.top {
+    margin-top: 250px;
+    width: 250px;
+    margin-left: 5px;
+    margin-right: 5px;
+    text-align: center;
+}

@@ -4,18 +4,22 @@ import './Forms.css'
 function SignupPage({setIsLogged}){
     const [username, setUsername] = useState();
     const [password, setPassword] = useState();
+    const [email, setEmail] = useState();
 
     const signupClick = () => {
         setUsername(document.getElementById("usrname").value);
         setPassword(document.getElementById("pass").value);
-        const json = {'username': username, 'password': password};
+        setEmail(document.getElementById("mail").value);
+        const json = {'username': username, 'email': email, 'password': password};
         const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json)};
 
-        const ans = fetchData('http://localhost:5000/register', options);
-        document.getElementById("msg").textContent = ans.Message || ans.Error;
-        if (ans.Message) {
-            setIsLogged(true);
-        }
+        fetchData('http://localhost:5000/register', options).then(data => document.getElementById("msg").textContent = data.Message || data.Error);
+        // const ans = await fetchData('http://localhost:5000/register', options);
+        // console.log(ans.Message + " " + ans.Error);
+        // document.getElementById("msg").textContent = ans.Message || ans.Error;
+        // if (ans.Message) {
+        //     setIsLogged(true);
+        // }
     }
 
     return (
@@ -26,9 +30,13 @@ function SignupPage({setIsLogged}){
                 <input id="usrname"/>
                 <p>Password:</p>
                 <input id="pass" type="password"/>
+                <p>Email:</p>
+                <input id="mail"/>
                 <button onClick={signupClick}>Sign up</button>
             </div>
-            <p id="msg"/>
+            <div className="center">
+                <p className="top" id="msg"/>
+            </div>
         </div>
     )
 }
