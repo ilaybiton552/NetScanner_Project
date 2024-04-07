@@ -3,12 +3,17 @@ import './Forms.css'
 
 function LoginPage({setIsLogged}){
     const loginClick = () => {
-        const username = document.getElementById("usrname").value;
+        const username = document.getElementById("username").value;
         const password = document.getElementById("pass").value;
         const json = {'username': username, 'password': password};
         const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json)};
 
-        fetchData('http://localhost:5000/login', options).then(data => document.getElementById("msg").textContent = data.Message || data.Error);
+        fetchData('http://localhost:5000/login', options).then(data => {
+            const {Message, Error} = data;
+            if (Message) {
+                setIsLogged(true);
+            }
+            document.getElementById("msg").textContent = Message || Error});
     }
 
     return (

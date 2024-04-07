@@ -9,7 +9,12 @@ function SignupPage({setIsLogged}){
         const json = {'username': username, 'email': email, 'password': password};
         const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json)};
 
-        fetchData('http://localhost:5000/register', options).then(data => document.getElementById("msg").textContent = data.Message || data.Error);
+        fetchData('http://localhost:5000/register', options).then(data => {
+            const {Message, Error} = data;
+            if (Message) {
+                setIsLogged(true);
+            }
+            document.getElementById("msg").textContent = Message || Error});
     }
 
     return (
