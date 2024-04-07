@@ -14,6 +14,8 @@ import Logout from './assets/pages/Logout';
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
+  const [username, setUsername] = useState();
+
   return (
     <Router>
         <Navbar isLogged={isLogged} />
@@ -22,9 +24,9 @@ function App() {
           <Route path="/ScanPage" element={<ScanPage/>} />
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
-          <Route path="/AttacksPage" element={<AttacksPage/>}/>
-          <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged}/>}/>
-          <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged}/>}/>
+          <Route path="/AttacksPage" element={<AttacksPage username={username}/>}/>
+          <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged} setUsername={setUsername}/>}/>
+          <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged} setUsername={setUsername}/>}/>
           <Route path="/Logout" element={<Logout setIsLogged={setIsLogged}/>}/>
         </Routes>
     </Router>

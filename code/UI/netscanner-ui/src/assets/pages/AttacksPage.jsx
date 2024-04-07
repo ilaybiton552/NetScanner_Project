@@ -1,13 +1,14 @@
 import React, {useState, useEffect} from "react";
 import './AttacksPage.css'
 
-function AttacksPage(){
+function AttacksPage({username}){
     const [attacks, setAttacks] = useState([]);
     const [wait, setWait] = useState(true);
 
     useEffect(() => {
         const fetchAttacks = async () => {
-            const attacksList = await fetchData('http://localhost:5000/all_scan_results', null);
+            const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({'username': username})};
+            const attacksList = await fetchData('http://localhost:5000/scan_results', options);
             setAttacks(attacksList);
             console.log(attacksList);
             setWait(false);
