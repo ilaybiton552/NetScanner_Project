@@ -200,7 +200,7 @@ def handle_packet(packet):
         # if DNS packet - check for DNS poisoning
         if DNS in packet:
             if is_dns_poisoning(packet):
-                notify_computer("DNS Attack detected")
+                notify.notify_computer("DNS Attack detected")
                 handle_attack(packet, "DNS Poisoning")
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
@@ -209,13 +209,13 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 msg = "ARP Spoofing attack detected! Real Mac - " + real_mac + ", Fake mac - " + packet_mac
-                notify_computer(msg)
+                notify.notify_computer(msg)
                 handle_attack(packet, "ARP Spoofing")
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
-                notify_computer("SMURF attack detected!")
+                notify.notify_computer("SMURF attack detected!")
                 handle_attack(packet, "SMURF")
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
