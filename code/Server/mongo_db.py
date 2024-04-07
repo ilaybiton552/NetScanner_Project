@@ -149,7 +149,6 @@ def add_info():
 
 def main():
     create_database()
-    add_info()
     
     #use the database here
 
