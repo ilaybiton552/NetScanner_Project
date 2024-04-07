@@ -182,7 +182,8 @@ def handle_attack(packet, type):
     current_time = time.ctime(time.localtime())  # current time
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
 
-    mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()
+    mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()  # insert the attack
+    mongo_db.BlockedComp(mac_address, ip_address, type).insert()  # insert the attacked computer
 
 
 def handle_packet(packet):
@@ -196,7 +197,7 @@ def handle_packet(packet):
         if DNS in packet:
             if is_dns_poisoning(packet):
                 notify_computer("DNS Attack detected")
-                handle_attack(packet, DNS_ATTACK)
+                handle_attack(packet, "DNS Poisoning")
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
@@ -204,19 +205,19 @@ def handle_packet(packet):
             real_mac = get_mac_address(packet_ip)
             if real_mac is not None and real_mac != packet_mac:
                 notify_computer(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
-                handle_attack(packet, ARP_ATTACK)
+                handle_attack(packet, "ARP Spoofing")
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
                 notify_computer(f"SMURF attack detected! Attacker - {check[1]}")
-                handle_attack(packet, SMURF_ATTACK)
+                handle_attack(packet, "SMURF")
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:
             check = is_syn_flood_attack(packet)
             if check[0]:
                 notify_computer(f"SYN Flood attack detected! Attacker - {check[1]}")
-                handle_attack(packet, SYN_ATTACK)
+                handle_attack(packet, "SYN Flood")
                 
     except Exception:
         pass
