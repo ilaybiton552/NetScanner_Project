@@ -1,4 +1,5 @@
 import pymongo
+from flask import jsonify
 
 users = None
 scan_results = None
@@ -59,6 +60,9 @@ class Attack:
     def update(self):
         attacks.update_one({'attack_name': self.attack_name}, {'$set': {'attack_description': self.attack_description}})
     
+    def to_dict(self):
+        return {'attack_name': self.attack_name, 'attack_description': self.attack_description}
+
     @staticmethod
     def get_all():
         return attacks.find()
@@ -148,8 +152,15 @@ def add_info():
 
 def main():
     create_database()
-    add_info()
     #use the database here
+    attacks = Attack.get_all()
+    attacks_dict = list(attacks)
+    for attack in attacks_dict:
+        del attack['_id']
+        print(attack)
+
+    print()
+    print(attacks_dict)
 
 if __name__ == '__main__':
     main()

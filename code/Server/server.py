@@ -6,7 +6,6 @@ import platform
 import network_scan
 import mongo_db
 
-
 app = Flask(__name__)
 CORS(app)
 
@@ -155,21 +154,27 @@ def get_scan_state():
 @app.route('/all_attacks', methods=['GET'])
 def get_all_attacks():
     attacks = mongo_db.Attack.get_all()
-    attacks_dict = [attack.to_dict() for attack in attacks]
-    return jsonify(attacks_dict)
+    attacks_dict = list(attacks)
+    for attack in attacks_dict:
+        del attack['_id']
+    return jsonify({attacks_dict})
 
 @app.route('/all_scan_results', methods=['GET'])
 def get_all_scan_results():
     scan_results = mongo_db.ScanResult.get_all()
-    scan_results_dict = [scan_result.to_dict() for scan_result in scan_results]
+    scan_results_dict = list(scan_results)
+    for scan_result in scan_results_dict:
+        del scan_result['_id']
     return jsonify(scan_results_dict)
 
 @app.route('/scan_results', methods=['POST'])
 def get_scan_results_by_username():
     username = request.json.get('username')
     scan_results = mongo_db.ScanResult.get_by_username(username)
-    scan_results_dict = [scan_result.to_dict() for scan_result in scan_results]
-    return jsonify(scan_results_dict)
+    scan_results_dict = list(scan_results)
+    for scan_result in scan_results_dict:
+        del scan_result['_id']
+    return jsonify(scan_results)
 
 @app.route('/login', methods=['POST'])
 def login():
