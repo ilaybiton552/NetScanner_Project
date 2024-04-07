@@ -104,13 +104,14 @@ class ScanResult:
 
 #region BlockedComp
     class BlockedComp:
-        def __init__(self, mac_address, ip_address, attack):
+        def __init__(self, mac_address, ip_address, attack, username):
             self.mac_address = mac_address
             self.ip_address = ip_address
             self.attack = attack
+            self.username = username
         
         def insert(self):
-            blocked_comp.insert_one({'mac_address': self.mac_address, 'ip_address': self.ip_address, 'attack': self.attack})
+            blocked_comp.insert_one({'mac_address': self.mac_address, 'ip_address': self.ip_address, 'attack': self.attack, 'username': self.username})
         
         @staticmethod
         def get_all():
@@ -138,18 +139,17 @@ def add_info():
     user = User('user2', 'user2@gmail,com', 'user2')
     user.insert()
 
-    scan_result = ScanResult('admin', 'ARP Spoofing', '2021-09-01', '00:00:00:00:00:00', '123.34.5.2', 'wow', 'some')
+    scan_result = ScanResult('admin', 'ARP Spoofing', '2021-09-01', '00:00:00:00:00:00', '123.34.5.2', 'wow')
     scan_result.insert()
-    scan_result = ScanResult('admin', 'DNS Poisoning', '2021-09-02', '00:00:00:00:00:01', '233.23.4.2', 'cat', 'some')
+    scan_result = ScanResult('admin', 'DNS Poisoning', '2021-09-02', '00:00:00:00:00:01', '233.23.4.2', 'cat')
     scan_result.insert()
-    scan_result = ScanResult('admin', 'Evil Twin', '2021-09-03', '00:00:00:00:00:02', '23.22.34.2', 'kiko milano', 'some2')
+    scan_result = ScanResult('admin', 'Evil Twin', '2021-09-03', '00:00:00:00:00:02', '23.22.34.2', 'kiko milano')
     scan_result.insert()
 
-    blocked_comp.insert_many([{ 'mac_address': '00:00:00:00:00:00', 'ip_address': '134.21.46.3', 'attack': 'Evil Twin'}, { 'mac_address': '00:00:00:00:00:01', 'ip_address': '121.21.46.3', 'attack': 'ARP Spoofing' }, { 'mac_address': '00:00:00:00:00:02', 'ip_address': '23.21.46.3', 'attack': 'DNS Poisoning' }])
+    blocked_comp.insert_many([{ 'mac_address': '00:00:00:00:00:00', 'ip_address': '134.21.46.3', 'attack': 'Evil Twin', 'username': 'admin'}, { 'mac_address': '00:00:00:00:00:01', 'ip_address': '121.21.46.3', 'attack': 'ARP Spoofing', 'username': 'admin' }, { 'mac_address': '00:00:00:00:00:02', 'ip_address': '23.21.46.3', 'attack': 'DNS Poisoning', 'username': 'admin' }])
 
 def main():
     create_database()
-    
     #use the database here
 
 if __name__ == '__main__':

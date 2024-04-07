@@ -157,7 +157,7 @@ def get_all_attacks():
     attacks_dict = list(attacks)
     for attack in attacks_dict:
         del attack['_id']
-    return jsonify({attacks_dict})
+    return jsonify(attacks_dict)
 
 @app.route('/all_scan_results', methods=['GET'])
 def get_all_scan_results():
