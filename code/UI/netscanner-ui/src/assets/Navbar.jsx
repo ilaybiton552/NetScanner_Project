@@ -6,9 +6,10 @@ function Navbar() {
   return (
     <nav>
       <Link to="/" className='title'>Home</Link>
+      <NavLink to="/ScanPage">Scan</NavLink>
       <ul>
         <li>
-          <NavLink to="/ScanPage">Scan</NavLink>
+          
         </li>
         <li>
           <NavLink to="/NetworkConnection">Connect to Network</NavLink>

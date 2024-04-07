@@ -1,10 +1,10 @@
 import React from "react";
 import './Forms.css'
 
-function LoginPage(){
+function SignupPage(){
     return (
         <div className="center">
-            <h1>Login Page:</h1>
+            <h1>Sign Up Page:</h1>
         </div>
     )
 }
@@ -22,4 +22,4 @@ async function fetchData(url, options) {
     }
 }
 
-export default LoginPage;
+export default SignupPage;
