@@ -19,7 +19,7 @@ function App() {
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
           <Route path="/AttacksPage" element={<AttacksPage/>}/>
-          <Route path="/LoginPage" element={<LoginPage/>}/>
+          <Route path="/LoginPage" element={<LoginPage/>}/> 
           <Route path="/SignupPage" element={<SignupPage/>}/>
         </Routes>
     </Router>
