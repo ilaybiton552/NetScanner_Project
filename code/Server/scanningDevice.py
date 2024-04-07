@@ -10,6 +10,7 @@ import psutil
 #import evil_twin_detector
 import netifaces
 import evil_twin_detector_terminal
+import mongo_db
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -24,10 +25,6 @@ BLOCK_MAC_SCRIPT = "./block_mac.sh"
 BLOCK_IP_SCRIPT = "./block_ip.sh"
 IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
 NOTIFY_SCRIPT = "./notify.sh"
-DNS_ATTACK = 1
-ARP_ATTACK = 2
-SMURF_ATTACK = 3
-SYN_ATTACK = 4
 CURR_NET_SCRIPT = "./get_network.sh"
 
 
@@ -185,6 +182,8 @@ def handle_attack(packet, type):
     current_time = time.ctime(time.localtime())  # current time
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
 
+    mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()
+
 
 def handle_packet(packet):
     """
@@ -225,7 +224,7 @@ def handle_packet(packet):
 
 
 class Sniffer(Thread):
-    def __init__(self, dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
+    def __init__(self, dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin, username):
         self.running = True
         self.dns_poisoning = dns_poisoning
         self.syn_flood = syn_flood
@@ -235,6 +234,7 @@ class Sniffer(Thread):
         self.syn_packets = {}  # dict which contains all of the source IP of senders of TCP SYN packets
         self.icmp_packets = {}  # dict which contains all of the source IP of senders of ICMP packets
         self.start_time = time.perf_counter()  # timer for SYN Flood and SMURF attacks
+        self.username = username
         super().__init__()
 
     def run(self):

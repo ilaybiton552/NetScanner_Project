@@ -9,6 +9,8 @@ import mongo_db
 app = Flask(__name__)
 CORS(app)
 
+username = None
+
 @app.route('/networks', methods=['GET'])
 def get_available_networks():
     try:
@@ -88,7 +90,7 @@ def start_scanning():
     smurf = args.get('smurf')
     evil_twin = args.get('evil_twin')
 
-    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
+    scanningDevice.start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin, username)
     msg = "start scanning for:\n"
     if dns_poisoning:
         msg += "DNS Poisoning\n"
