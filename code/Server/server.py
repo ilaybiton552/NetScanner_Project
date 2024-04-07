@@ -178,7 +178,6 @@ def get_scan_results_by_username():
 
 @app.route('/login', methods=['POST'])
 def login():
-    print("login")
     request_data = request.json
     username = request_data.get('username')
     password = request_data.get('password')
