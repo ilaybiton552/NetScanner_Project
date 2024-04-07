@@ -154,10 +154,10 @@ def get_scan_state():
 @app.route('/all_attacks', methods=['GET'])
 def get_all_attacks():
     attacks = mongo_db.Attack.get_all()
-    attacks_dict = list(attacks)
-    for attack in attacks_dict:
+    attacks_list = list(attacks)
+    for attack in attacks_list:
         del attack['_id']
-    return jsonify(attacks_dict)
+    return jsonify(attacks_list)
 
 @app.route('/all_scan_results', methods=['GET'])
 def get_all_scan_results():
