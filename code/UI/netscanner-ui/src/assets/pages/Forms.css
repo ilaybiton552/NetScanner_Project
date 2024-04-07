@@ -4,3 +4,19 @@
     transform: translate(-50%, 0%);
     margin: 5px;
 }
+
+button {
+    border-radius: 15px;
+    width: 250px;
+    margin: 5px;
+}
+
+input {
+    width: 250px;
+    margin: 5px;
+}
+
+p {
+    margin-left: 5px;
+    margin-right: 5px;
+}

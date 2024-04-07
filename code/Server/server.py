@@ -177,11 +177,10 @@ def login():
     username = request_data.get('username')
     password = request_data.get('password')
     if not username or not password:
-        return jsonify({'error': 'Username and password are required'})
+        return jsonify({'Error': 'Username and password are required'})
     if mongo_db.User.login(username, password):
         return jsonify({'Message': 'Login successful'})
-    else:
-        return jsonify({'Message': 'Login failed'}), 404
+    return jsonify({'Error': 'Login failed'}), 404
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -189,13 +188,12 @@ def register():
     username = request_data.get('username')
     password = request_data.get('password')
     if not username or not password:
-        return jsonify({'error': 'Username and password are required'})
+        return jsonify({'Error': 'Username and password are required'})
     if mongo_db.User.check_duplicate(username):
-        return jsonify({'Message': 'Username already exists'})
-    else:
-        user = mongo_db.User(username, password)
-        user.insert()
-        return jsonify({'Message': 'User created successfully'})
+        return jsonify({'Error': 'Username already exists'})
+    user = mongo_db.User(username, password)
+    user.insert()
+    return jsonify({'Message': 'User created successfully'})
     
 
 def main():
