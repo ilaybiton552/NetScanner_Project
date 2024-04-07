@@ -513,10 +513,7 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     """
     sniffer.update(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin)
     if evil_twin:
-        if evil_twin_detector_terminal.main_thread.is_alive():
-            evil_twin_detector_terminal.finishing_evil_twin_detection()
-            evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
-        else:
+        if not evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
     else:
         if evil_twin_detector_terminal.main_thread.is_alive():
