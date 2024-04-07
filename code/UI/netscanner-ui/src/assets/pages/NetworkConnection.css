@@ -1,40 +1,72 @@
 .networkDesign {
-    min-width: 25rem;
-    align-items: center ;
-    margin-top: -150px;
-    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
 .center {
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, 0%);
-    margin: 5px;
+    width: 80%;
+    max-width: 500px;
 }
 
 ul {
-    text-decoration: none;
+    list-style-type: none;
+    padding: 0;
 }
 
 ul li {
-    font-size: 20px;
-    list-style: none;
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 2px;
 }
 
 button {
     border-radius: 10px;
     width: 100px;
-    font-size: 20px;
-    margin: 5px;
-    font-family: 'Times New Roman', Times, serif;
+    font-size: 1em;
+    margin: 2px;
+    padding: 5px;
+    background-color: #333;
+    color: #000000;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
 }
 
 input {
-    font-size: 20px;
-    font-family: 'Times New Roman', Times, serif;
+    font-size: 1em;
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 p {
-    font-size: 30px;
-    font-family: 'Times New Roman', Times, serif;
+    font-size: 1.35em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.connectButton {
+    border-radius: 10px;
+    width: 100px;
+    font-size: 1em;
+    margin: 5px;
+    padding: 10px;
+    background-color: #47138b; /* purple background */
+    color: #ffffff; /* White text */
+    border: none;
+    cursor: pointer;
+}
+
+.connectButton:hover {
+    background-color: #220b40; /* Darker purple when hovered */
 }

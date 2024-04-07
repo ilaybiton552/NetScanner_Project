@@ -1,31 +1,32 @@
 nav {
+    background-color: #47138b;
+    padding: 10px;
+    color: white;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    background-color: violet;
 }
 
 nav .title {
-    font-size: 1.5rem;
-    margin: 1rem;
-    font-weight: bold;
+    color: #fff;
     text-decoration: none;
-    color: black;
+    font-size: 1.5em;
 }
 
 nav ul {
+    list-style-type: none;
     display: flex;
+    gap: 10px;
 }
 
 nav ul li {
-    list-style: none;
+    margin: 0 10px;
 }
 
 nav ul li a {
-    display: block;
+    color: #fff;
     text-decoration: none;
-    color: black;
-    padding: 0.5rem;
-    margin: 0 0.5rem;
-    border-radius: 0.5rem;
+}
+
+nav ul li a:hover {
+    color: #ddd;
 }
