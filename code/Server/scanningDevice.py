@@ -178,10 +178,10 @@ def handle_attack(packet, type):
         print(ex)
     
     # blocking the computer
-    #if mac_address is not None:
-     #   subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
-    #else:  # blocking ip address - error getting mac address
-     #   subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
+    if mac_address is not None:
+        subprocess.check_call([BLOCK_MAC_SCRIPT, mac_address])
+    else:  # blocking ip address - error getting mac address
+        subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
 
     current_time = time.ctime(time.localtime())  # current time
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
