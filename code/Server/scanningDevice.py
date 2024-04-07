@@ -476,7 +476,7 @@ def start_sniffing(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin, use
         print("[*] Starting evil twin detector...")
 
         try:
-            evil_twin_detector_terminal.starting_evil_twin_detection()
+            evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
         except Exception as ex:
             evil_twin_detector_terminal.finishing_evil_twin_detection()
             print("Stopped the sniffing because: ", ex)
@@ -511,9 +511,9 @@ def update_sniffer(dns_poisoning, syn_flood, arp_spoofing, smurf, evil_twin):
     if evil_twin:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()
-            evil_twin_detector_terminal.starting_evil_twin_detection()
+            evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
         else:
-            evil_twin_detector_terminal.starting_evil_twin_detection()
+            evil_twin_detector_terminal.starting_evil_twin_detection(sniffer.username)
     else:
         if evil_twin_detector_terminal.main_thread.is_alive():
             evil_twin_detector_terminal.finishing_evil_twin_detection()

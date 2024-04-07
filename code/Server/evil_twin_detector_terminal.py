@@ -2,8 +2,9 @@ import subprocess
 import threading
 import schedule
 import time
+import mongo_db
 
-
+NOTIFY_SCRIPT = "./notify.sh"
 main_thread = None
 stop_event = None
 
@@ -69,8 +70,12 @@ def job():
 
     duplicates = [ssid for ssid, count in ssid_counts.items() if count > 1]
     if duplicates:
-        print(f"Evil twin detected with SSIDs: {', '.join(duplicates)}")
-
+        msg = f"Evil twin detected with SSIDs: {', '.join(duplicates)}"
+        print(msg)
+        subprocess.run([NOTIFY_SCRIPT, msg])
+        current_time = time.ctime(time.localtime())  # current time
+        mongo_db.ScanResult(username, "Evil Twin", current_time, None, None, None).insert()  # insert the attack
+        
 
 def main_thread_job(stop_event):
     schedule.every(10).seconds.do(job)
@@ -80,9 +85,11 @@ def main_thread_job(stop_event):
         time.sleep(1)
 
 
-def starting_evil_twin_detection():
+def starting_evil_twin_detection(user):
+    global username
     global stop_event
     global main_thread
+    username = user
     stop_event = threading.Event()
     main_thread = threading.Thread(target=main_thread_job, args=(stop_event,))
     main_thread.start()
