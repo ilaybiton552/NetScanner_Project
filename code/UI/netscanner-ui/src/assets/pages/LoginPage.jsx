@@ -1,21 +1,14 @@
-import React, {useState} from "react";
+import React from "react";
 import './Forms.css'
 
 function LoginPage({setIsLogged}){
-    const [username, setUsername] = useState();
-    const [password, setPassword] = useState();
-
     const loginClick = () => {
-        setUsername(document.getElementById("usrname").value);
-        setPassword(document.getElementById("pass").value);
+        const username = document.getElementById("usrname").value;
+        const password = document.getElementById("pass").value;
         const json = {'username': username, 'password': password};
         const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json)};
 
-        const ans = fetchData('http://localhost:5000/login', options);
-        document.getElementById("msg").textContent = ans.Message || ans.Error;
-        if (ans.Message) {
-            setIsLogged(true);
-        }
+        fetchData('http://localhost:5000/login', options).then(data => document.getElementById("msg").textContent = data.Message || data.Error);
     }
 
     return (
@@ -27,8 +20,8 @@ function LoginPage({setIsLogged}){
                 <p>Password:</p>
                 <input id="pass" type="password"/>
                 <button onClick={loginClick}>Login</button>
+                <p className="top" id="msg"/>
             </div>
-            <p id="msg"/>
         </div>
     )
 }

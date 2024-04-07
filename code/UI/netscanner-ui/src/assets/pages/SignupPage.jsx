@@ -1,25 +1,15 @@
-import React, {useState} from "react";
+import React from "react";
 import './Forms.css'
 
 function SignupPage({setIsLogged}){
-    const [username, setUsername] = useState();
-    const [password, setPassword] = useState();
-    const [email, setEmail] = useState();
-
     const signupClick = () => {
-        setUsername(document.getElementById("usrname").value);
-        setPassword(document.getElementById("pass").value);
-        setEmail(document.getElementById("mail").value);
+        const username = document.getElementById("usrname").value;
+        const password = document.getElementById("pass").value;
+        const email = document.getElementById("mail").value;
         const json = {'username': username, 'email': email, 'password': password};
         const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(json)};
 
         fetchData('http://localhost:5000/register', options).then(data => document.getElementById("msg").textContent = data.Message || data.Error);
-        // const ans = await fetchData('http://localhost:5000/register', options);
-        // console.log(ans.Message + " " + ans.Error);
-        // document.getElementById("msg").textContent = ans.Message || ans.Error;
-        // if (ans.Message) {
-        //     setIsLogged(true);
-        // }
     }
 
     return (
