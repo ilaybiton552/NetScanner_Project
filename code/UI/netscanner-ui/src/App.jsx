@@ -13,18 +13,19 @@ import SignupPage from './assets/pages/SignupPage';
 import Logout from './assets/pages/Logout';
 
 function App() {
+  const [isLogged, setIsLogged] = useState(false);
   return (
     <Router>
-        <Navbar />
+        <Navbar isLogged={isLogged} />
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/ScanPage" element={<ScanPage/>} />
           <Route path="/NetworkConnection" element={<NetworkConnection/>} />
           <Route path="/NetworkDetails" element={<NetworkDetails/>}/>
           <Route path="/AttacksPage" element={<AttacksPage/>}/>
-          <Route path="/LoginPage" element={<LoginPage/>}/>
-          <Route path="/SignupPage" element={<SignupPage/>}/>
-          <Route path="/Logout" element={<Logout/>}/>
+          <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged}/>}/>
+          <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged}/>}/>
+          <Route path="/Logout" element={<Logout setIsLogged={setIsLogged}/>}/>
         </Routes>
     </Router>
   )

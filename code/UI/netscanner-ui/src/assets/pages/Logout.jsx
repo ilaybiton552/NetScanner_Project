@@ -1,13 +1,9 @@
 import react, {useEffect} from "react"
-import { useHistory } from "react-router-dom";
 
-function Logout(){
-    const history = useHistory();
-
+function Logout({ setIsLogged }){
     useEffect(() => {
         setIsLogged(false);
-        history.push("/");
-    }, [history])
+    })
 
     return (
         <div>

@@ -2,9 +2,7 @@ import React, {useState} from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import "./Navbar.css"
 
-function Navbar() {
-  const [isLogged, setIsLogged] = useState(false);
-
+function Navbar({isLogged}) {
   return (
     <nav>
       <Link to="/" className='title'>Home</Link>

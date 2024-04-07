@@ -1,10 +1,16 @@
 import React from "react";
 import './Forms.css'
 
-function SignupPage(){
+function SignupPage({setIsLogged}){
     return (
         <div className="center">
             <h1>Sign Up Page:</h1>
+            <div className="center">
+                <p>Username:</p>
+                <input id="username"/>
+                <p>Password:</p>
+                <input id="pass" type="password"/>
+            </div>
         </div>
     )
 }
