@@ -291,9 +291,10 @@ def to_dict_of_networks_from_output(output):
                 elif "Group Cipher" in line:
                     encryption = line.split()[3]
                 if ssid and authentication and network_type and encryption:
-                    if all(char == '\x00' for char in ssid):
-                        ssid = " "
-                    access_points.append(Network(ssid, network_type, authentication, encryption))
+                    if not all(char == '\x00' for char in ssid):
+                        access_points.append(Network(ssid, network_type, authentication, encryption))
+                    else:
+                        access_points.append(Network("Hidden Network", network_type, authentication, encryption))
                     ssid = None
                     authentication = None
                     network_type = None
