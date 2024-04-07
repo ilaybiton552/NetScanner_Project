@@ -7,8 +7,12 @@ function Navbar({isLogged}) {
     <nav>
       <Link to="/" className='title'>Home</Link>
       {isLogged ? (<ul>
-        
-        
+        <li>
+          <NavLink to="/ScanPage">Scan</NavLink>
+        </li>
+        <li>
+          <NavLink to="/NetworkConnection">Connect to Network</NavLink>
+        </li>
         <li>
           <NavLink to="/NetworkDetails">Network Details</NavLink>
         </li>
@@ -24,12 +28,6 @@ function Navbar({isLogged}) {
         </li>
         <li>
           <NavLink to="/SignupPage">Sign Up</NavLink>
-        </li>
-        <li>
-          <NavLink to="/ScanPage">Scan</NavLink>
-        </li>
-        <li>
-          <NavLink to="/NetworkConnection">Connect to Network</NavLink>
         </li>
         </ul>)}
       <br/>
