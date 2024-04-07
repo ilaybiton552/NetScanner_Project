@@ -1,12 +1,13 @@
 import react, {useEffect} from "react"
 import { useNavigate } from "react-router-dom";
 
-function Logout({ setIsLogged }){
+function Logout({ setIsLogged, setUsername }){
     const navigate = useNavigate();
 
     useEffect(() => {
         setIsLogged(false);
         fetchData('http://localhost:5000/stop_scan', null);
+        setUsername("guest");
         navigate("/");
     })
 
