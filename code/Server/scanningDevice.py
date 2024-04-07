@@ -187,7 +187,7 @@ def handle_attack(packet, type):
     current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
 
     mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()  # insert the attack
-    mongo_db.BlockedComp(mac_address, ip_address, type).insert()  # insert the attacked computer
+    mongo_db.BlockedComp(mac_address, ip_address, type, sniffer.username).insert()  # insert the attacked computer
 
 
 def handle_packet(packet):

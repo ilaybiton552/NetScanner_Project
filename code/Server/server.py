@@ -7,7 +7,7 @@ import network_scan
 import mongo_db
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins='*')
 
 @app.route('/networks', methods=['GET'])
 def get_available_networks():
@@ -157,7 +157,7 @@ def get_all_attacks():
     attacks_dict = list(attacks)
     for attack in attacks_dict:
         del attack['_id']
-    return jsonify({attacks_dict})
+    return jsonify(attacks_dict)
 
 @app.route('/all_scan_results', methods=['GET'])
 def get_all_scan_results():
@@ -169,12 +169,16 @@ def get_all_scan_results():
 
 @app.route('/scan_results', methods=['POST'])
 def get_scan_results_by_username():
-    username = request.json.get('username')
-    scan_results = mongo_db.ScanResult.get_by_username(username)
-    scan_results_dict = list(scan_results)
-    for scan_result in scan_results_dict:
-        del scan_result['_id']
-    return jsonify(scan_results)
+    try:
+        username = request.json.get('username')
+        scan_results = mongo_db.ScanResult.get_by_username(username)
+        scan_results_list = list(scan_results)
+        for scan_result in scan_results_list:
+            del scan_result['_id']
+        return jsonify(scan_results_list)
+    except Exception as e:
+        print(e)
+        return jsonify({'Error': str(e)}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
