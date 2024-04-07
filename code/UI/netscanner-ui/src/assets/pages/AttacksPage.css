@@ -4,3 +4,16 @@
     transform: translate(-50%, 0%);
     margin: 5px;
 }
+
+.ulStyle {
+    width: 23rem;
+    border: 1px solid black;
+    border-radius: 20px;
+    margin: 15px;
+    padding: 5px;
+}
+
+.liStyle {
+    font-size: 30px;
+    text-align: left;
+}
