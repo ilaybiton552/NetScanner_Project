@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import './Forms.css'
 
 function LoginPage({setIsLogged}){
