@@ -1,15 +1,16 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import "./Navbar.css"
 
 function Navbar() {
+  const [isLogged, setIsLogged] = useState(false);
+
   return (
     <nav>
       <Link to="/" className='title'>Home</Link>
-      <NavLink to="/ScanPage">Scan</NavLink>
-      <ul>
+      {isLogged ? (<ul>
         <li>
-          
+          <NavLink to="/ScanPage">Scan</NavLink>
         </li>
         <li>
           <NavLink to="/NetworkConnection">Connect to Network</NavLink>
@@ -21,12 +22,16 @@ function Navbar() {
           <NavLink to="/AttacksPage">Attacks</NavLink>
         </li>
         <li>
+          <NavLink to="/Logout">Logout</NavLink>
+        </li>
+        </ul>) : (<ul>
+          <li>
           <NavLink to="/LoginPage">Login</NavLink>
         </li>
         <li>
           <NavLink to="/SignupPage">Sign Up</NavLink>
         </li>
-      </ul>
+        </ul>)}
       <br/>
     </nav>
   )

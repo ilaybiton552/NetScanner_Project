@@ -8,6 +8,9 @@ import ScanPage from './assets/pages/ScanPage';
 import NetworkConnection from './assets/pages/NetworkConnection';
 import NetworkDetails from './assets/pages/NetworkDetails';
 import AttacksPage from './assets/pages/AttacksPage';
+import LoginPage from './assets/pages/LoginPage';
+import SignupPage from './assets/pages/SignupPage';
+import Logout from './assets/pages/Logout';
 
 function App() {
   return (
@@ -21,6 +24,7 @@ function App() {
           <Route path="/AttacksPage" element={<AttacksPage/>}/>
           <Route path="/LoginPage" element={<LoginPage/>}/>
           <Route path="/SignupPage" element={<SignupPage/>}/>
+          <Route path="/Logout" element={<Logout/>}/>
         </Routes>
     </Router>
   )
