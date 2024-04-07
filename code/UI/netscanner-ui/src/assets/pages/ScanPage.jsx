@@ -54,20 +54,21 @@ function ScanPage(){
     return (
         <div className="mainDiv">
             <h1>List of Attacks:</h1>
-            {Object.keys(attacks).map((attackType, index) => (
-                <div key={index}>
-                    <label>
+            <div className="checkboxes">
+                {Object.keys(attacks).map((attackType, index) => (
+                    <div key={index} className="custom-checkbox">
                         <input
                             type="checkbox"
                             id={attackType}
                             checked={attacks[attackType]}
                             onChange={() => handleCheckboxChange(attackType)}
                         />
-                        {attackType.replace(/_/g, ' ')}
-                    </label>
-                    <br />
-                </div>
-            ))}
+                        <label htmlFor={attackType}>
+                            {attackType.replace(/_/g, ' ')}
+                        </label>
+                    </div>
+                ))}
+            </div>
             <br/>
             <button id="scanButton" onClick={scanClick}>{scan ? "Start Scanning": "Stop Scanning"}</button>
             <p id="scanningDetails"/>
