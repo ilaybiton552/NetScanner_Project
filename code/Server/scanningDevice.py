@@ -12,6 +12,7 @@ import netifaces
 import evil_twin_detector_terminal
 import mongo_db
 import notify
+import network_scan
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -144,6 +145,9 @@ def get_ip_address_from_packet(packet):
         return packet[IP].src
     elif IPv6 in packet:
         return packet[IPv6].src
+    elif ARP in packet:
+        return packet[ARP].psrc
+    return None
 
 
 def get_mac_address(ip_address):
@@ -152,6 +156,11 @@ def get_mac_address(ip_address):
     :param ip_address: the ip address of the computer
     :return: the mac address of the computer
     """
+    computers = network_scan.get_computers()
+    for comp in computers:
+        if comp.ip == ip_address:
+            return comp.mac
+    
     if bool(re.match(IPV4_REGEX, ip_address)):  # ipv4 address
         answer = srp1(Ether(dst=BROADCAST) / ARP(pdst=ip_address), timeout=2, verbose=False)
         if ARP in answer:
@@ -171,8 +180,8 @@ def handle_attack(packet, type):
     :return: None
     """
     mac_address = None
-    ip_address = get_ip_address_from_packet(packet)
     try:
+        ip_address = get_ip_address_from_packet(packet)
         mac_address = get_mac_address(ip_address)
     except Exception as ex:
         print(ex)
@@ -200,21 +209,25 @@ def handle_packet(packet):
         # if DNS packet - check for DNS poisoning
         if DNS in packet:
             if is_dns_poisoning(packet):
-                notify_computer("DNS Attack detected")
+                notify.notify_computer("DNS Attack detected")
                 handle_attack(packet, "DNS Poisoning")
         # if ARP packet - check for ARP spoofing attack
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
             packet_mac = packet[ARP].hwsrc
-            real_mac = get_mac_address(packet_ip)
+            try:
+                real_mac = get_mac_address(packet_ip)
+            except Exception as ex:
+                print(ex)
             if real_mac is not None and real_mac != packet_mac:
-                notify_computer(f"ARP Spoofing attack detected! Real Mac - {real_mac}, Fake Mac - {packet_mac}")
+                msg = "ARP Spoofing attack detected!" + packet_ip + " has 2 macs: " + real_mac + " and " + packet_mac
+                notify.notify_computer(msg)
                 handle_attack(packet, "ARP Spoofing")
         # if ICMP packet - check for SMURF attack
         elif ICMP in packet:
             check = is_smurf_attack(packet)
             if check[0]:
-                notify_computer(f"SMURF attack detected!")
+                notify.notify_computer("SMURF attack detected!")
                 handle_attack(packet, "SMURF")
         # if TCP packet - check for SYN Flood attack
         elif TCP in packet:

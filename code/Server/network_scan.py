@@ -4,6 +4,8 @@ import netifaces
 import subprocess
 import urllib.request
 import csv
+import time
+from threading import Thread
 
 def download_oui_database(url, filename):
     urllib.request.urlretrieve(url, filename)
@@ -58,6 +60,18 @@ def get_wireless_interface():
     return interface
 
 
+def get_self_ip_address():
+    ip_address = subprocess.check_output(['hostname', '-I']).decode().strip()[0:9]
+    return ip_address
+
+# Function to get MAC address
+def get_self_mac_address():
+    mac_address = subprocess.check_output(['ip', 'link', 'show']).decode()
+    for line in mac_address.split('\n'):
+        if 'ether' in line:
+            return line.split(' ')[-3]
+        
+
 def scan_subnet(subnet, oui_dict):
     print(f"Scanning {subnet}...")
     arp_request = ARP(pdst=str(subnet))
@@ -66,6 +80,14 @@ def scan_subnet(subnet, oui_dict):
     answered = srp(arp_request_broadcast, timeout=1, verbose=False)[0]
 
     computers = []
+
+    # get self computer details
+    self_mac = get_self_mac_address()
+    self_ip = get_self_ip_address()
+    manufacturer = get_manufacturer(self_mac, oui_dict)
+    computer = Computer(self_ip, self_mac, manufacturer)
+    computers.append(computer)
+
     for sent, received in answered:
         manufacturer = get_manufacturer(received.hwsrc, oui_dict)
         computer = Computer(received.psrc, received.hwsrc, manufacturer)
@@ -84,3 +106,24 @@ def get_network_state():
     network = get_network(interface)
     computers = scan_subnet(network, oui_dict)
     return computers
+
+
+class NetworkState(Thread):
+    def __init__(self):
+        self.computers = []
+        super().__init__()
+
+    def run(self):
+        while True:
+            self.computers = get_network_state()
+            time.sleep(60)  # wait 60 seconds
+
+
+def start_network_state():
+    global net_stats
+    net_stats = NetworkState()
+    net_stats.start()
+
+
+def get_computers():
+    return net_stats.computers

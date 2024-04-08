@@ -139,7 +139,7 @@ def update_scanning():
 @app.route('/network_state', methods=['GET'])
 def get_network_state():
     try:
-        computers = network_scan.get_network_state()
+        computers = network_scan.get_computers()
         computers_dict = [computer.to_dict() for computer in computers]
         print(computers_dict)
         return jsonify(computers_dict)
@@ -210,6 +210,7 @@ def register():
 
 def main():
     # Run the server on http://localhost:5000
+    network_scan.start_network_state()
     mongo_db.create_database()
     app.run(debug=True)
 
