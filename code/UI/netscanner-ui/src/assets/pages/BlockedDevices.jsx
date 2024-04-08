@@ -26,6 +26,7 @@ function BlockedDevices({username}){
     return (
         <div className="center">
             <h1>Blocked Devices:</h1>
+            <button className="refreshButton" onClick={fetchBlockedComputers}>Refresh Data</button>
             <div className="center">
                 {wait ? (<p>Loading...</p>) : 
                 (
@@ -41,7 +42,6 @@ function BlockedDevices({username}){
                         </div>
                     ))
                 ) }
-                <button className="refreshButton" onClick={fetchBlockedComputers}>Refresh Data</button>
             </div>
         </div>
     )

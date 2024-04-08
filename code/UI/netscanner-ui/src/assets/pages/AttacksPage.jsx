@@ -21,6 +21,7 @@ function AttacksPage({username}){
     return (
         <div className="center">
             <h1>Attacks Details:</h1>
+            <button className="refreshButton" onClick={fetchAttacks}>Refresh Data</button>
             <div className="center">
                 {wait ? (<p>Loading...</p>) : 
                 (
@@ -41,7 +42,6 @@ function AttacksPage({username}){
                         </div>
                     ))
                 ) }
-                <button className="refreshButton" onClick={fetchAttacks}>Refresh Data</button>
             </div>
         </div>
     )

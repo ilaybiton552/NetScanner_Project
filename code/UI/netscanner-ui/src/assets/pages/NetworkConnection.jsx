@@ -34,6 +34,7 @@ function NetworkConnection() {
     return (
         <div className="center">
             <h1>List of Networks:</h1>
+            <button className="connectButton" onClick={fetchNetworkData}>Refresh Data</button>
             <div className="center">
                 {state ?
                 <div id="container">
@@ -54,7 +55,6 @@ function NetworkConnection() {
                 ) : (
                     <p>Loading...</p>
                 )}
-                <button className="connectButton" onClick={fetchNetworkData}>Refresh Data</button>
             </div>
         </div>
     );

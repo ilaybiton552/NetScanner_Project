@@ -18,6 +18,7 @@ function NetworkDetails(){
     return (
         <div className="center">
             <h1>Network Details:</h1>
+            <button className="refreshButton" onClick={fetchNetworkState}>Refresh Data</button>
             <div className="center">
                 {wait ? (<p>Loading...</p>) : 
                 (
@@ -31,7 +32,6 @@ function NetworkDetails(){
                         </div>
                     ))
                 ) }
-                <button className="refreshButton" onClick={fetchNetworkState}>Refresh Data</button>
             </div>
         </div>
     )
