@@ -206,9 +206,12 @@ def handle_packet(packet):
         elif ARP in packet:
             packet_ip = packet[ARP].psrc
             packet_mac = packet[ARP].hwsrc
-            real_mac = get_mac_address(packet_ip)
+            try:
+                real_mac = get_mac_address(packet_ip)
+            except Exception as ex:
+                print(ex)
             if real_mac is not None and real_mac != packet_mac:
-                msg = "ARP Spoofing attack detected! Real Mac - " + real_mac + ", Fake mac - " + packet_mac
+                msg = "ARP Spoofing attack detected!" + packet_ip + " has 2 macs: " + real_mac + " and " + packet_mac
                 notify.notify_computer(msg)
                 handle_attack(packet, "ARP Spoofing")
         # if ICMP packet - check for SMURF attack
