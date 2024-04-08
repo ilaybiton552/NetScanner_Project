@@ -19,9 +19,9 @@ function Navbar({isLogged}) {
         <li>
           <NavLink to="/AttacksPage">Attacks</NavLink>
         </li>
-        <li>
+        {/* <li>
           <NavLink to="/BlockedDevices">Blocked Devices</NavLink>
-        </li>
+        </li> */}
         <li>
           <NavLink to="/Logout">Logout</NavLink>
         </li>
