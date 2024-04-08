@@ -11,6 +11,7 @@ import AttacksPage from './assets/pages/AttacksPage';
 import LoginPage from './assets/pages/LoginPage';
 import SignupPage from './assets/pages/SignupPage';
 import Logout from './assets/pages/Logout';
+import BlockedDevices from './assets/pages/BlockedDevices';
 
 function App() {
   const [isLogged, setIsLogged] = useState(false);
@@ -27,6 +28,7 @@ function App() {
           <Route path="/AttacksPage" element={<AttacksPage username={username}/>}/>
           <Route path="/LoginPage" element={<LoginPage setIsLogged={setIsLogged} setUsername={setUsername}/>}/>
           <Route path="/SignupPage" element={<SignupPage setIsLogged={setIsLogged} setUsername={setUsername}/>}/>
+          <Route path="/BlockedDevices" element={<BlockedDevices setUsername={setUsername}/>}/>
           <Route path="/Logout" element={<Logout setIsLogged={setIsLogged} setUsername={setUsername}/>}/>
         </Routes>
     </Router>

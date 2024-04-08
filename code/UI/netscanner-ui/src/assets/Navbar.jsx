@@ -20,6 +20,9 @@ function Navbar({isLogged}) {
           <NavLink to="/AttacksPage">Attacks</NavLink>
         </li>
         <li>
+          <NavLink to="/BlockedDevices">Blocked Devices</NavLink>
+        </li>
+        <li>
           <NavLink to="/Logout">Logout</NavLink>
         </li>
         </ul>) : (<ul>

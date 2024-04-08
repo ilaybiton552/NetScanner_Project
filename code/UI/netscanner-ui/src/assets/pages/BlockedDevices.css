@@ -1,0 +1,39 @@
+.center {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    margin: 5px;
+}
+
+.ulStyle {
+    width: 23rem;
+    border: 1px solid black;
+    border-radius: 20px;
+    margin: 15px;
+    padding: 5px;
+}
+
+.liStyle {
+    font-size: 30px;
+    text-align: left;
+}
+
+.refreshButton {
+    border-radius: 10px;
+    width: 100px;
+    font-size: 1em;
+    margin: 5px;
+    padding: 10px;
+    background-color: #47138b; /* purple background */
+    color: #ffffff; /* White text */
+    border: none;
+    cursor: pointer;
+}
+
+.refreshButton:hover {
+    background-color: #220b40; /* Darker purple when hovered */
+}
+
+.but {
+    background-color: transparent;
+}
