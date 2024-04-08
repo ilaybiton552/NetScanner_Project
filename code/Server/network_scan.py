@@ -61,7 +61,7 @@ def get_wireless_interface():
 
 
 def get_self_ip_address():
-    ip_address = subprocess.check_output(['hostname', '-I']).decode().strip()[0:9]
+    ip_address = subprocess.check_output(['hostname', '-I']).decode().strip().split(' ')[0]
     return ip_address
 
 # Function to get MAC address
