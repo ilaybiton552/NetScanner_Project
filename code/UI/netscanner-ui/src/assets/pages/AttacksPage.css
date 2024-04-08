@@ -21,3 +21,19 @@
     color: #333; /* Darker text */
     margin-bottom: 10px; /* Space between list items */
 }
+
+.refreshButton {
+    border-radius: 10px;
+    width: 100px;
+    font-size: 1em;
+    margin: 5px;
+    padding: 10px;
+    background-color: #47138b; /* purple background */
+    color: #ffffff; /* White text */
+    border: none;
+    cursor: pointer;
+}
+
+.refreshButton:hover {
+    background-color: #220b40; /* Darker purple when hovered */
+}

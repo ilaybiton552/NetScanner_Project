@@ -7,17 +7,17 @@ function NetworkConnection() {
     const [networks, setNetworks] = useState([]);
 
     useEffect(() => {
-        const fetchNetworkData = async () => {
-            try {
-                const networkData = await fetchData('http://localhost:5000/networks', null);
-                setNetworks(networkData);
-            } catch (error) {
-                console.error('Error fetching networks:', error);
-            }
-        };
-
         fetchNetworkData();
     }, []);
+
+    const fetchNetworkData = async () => {
+        try {
+            const networkData = await fetchData('http://localhost:5000/networks', null);
+            setNetworks(networkData);
+        } catch (error) {
+            console.error('Error fetching networks:', error);
+        }
+    };
 
     const openPasswordInput = (ssid) => {
         setState(true);
@@ -54,6 +54,7 @@ function NetworkConnection() {
                 ) : (
                     <p>Loading...</p>
                 )}
+                <button className="connectButton" onClick={fetchNetworkData}>Refresh Data</button>
             </div>
         </div>
     );

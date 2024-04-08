@@ -6,16 +6,17 @@ function AttacksPage({username}){
     const [wait, setWait] = useState(true);
 
     useEffect(() => {
-        const fetchAttacks = async () => {
-            const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({'username': username})};
-            const attacksList = await fetchData('http://localhost:5000/scan_results', options);
-            //const attacksList = await fetchData('http://localhost:5000/all_scan_results', null);
-            setAttacks(attacksList);
-            console.log(attacksList);
-            setWait(false);
-        };
         fetchAttacks();
     }, []);
+
+    const fetchAttacks = async () => {
+        const options = {method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({'username': username})};
+        const attacksList = await fetchData('http://localhost:5000/scan_results', options);
+        //const attacksList = await fetchData('http://localhost:5000/all_scan_results', null);
+        setAttacks(attacksList);
+        console.log(attacksList);
+        setWait(false);
+    };
 
     return (
         <div className="center">
@@ -40,6 +41,7 @@ function AttacksPage({username}){
                         </div>
                     ))
                 ) }
+                <button className="refreshButton" onClick={fetchAttacks}>Refresh Data</button>
             </div>
         </div>
     )

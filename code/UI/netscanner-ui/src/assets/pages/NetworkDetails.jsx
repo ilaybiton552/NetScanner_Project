@@ -6,13 +6,14 @@ function NetworkDetails(){
     const [wait, setWait] = useState(true);
 
     useEffect(() => {
-        const fetchNetworkState = async () => {
-            const networkState = await fetchData('http://localhost:5000/network_state', null);
-            setDevices(networkState)
-            setWait(false)
-        };
         fetchNetworkState();
     }, []);
+
+    const fetchNetworkState = async () => {
+        const networkState = await fetchData('http://localhost:5000/network_state', null);
+        setDevices(networkState)
+        setWait(false)
+    };
 
     return (
         <div className="center">
@@ -30,6 +31,7 @@ function NetworkDetails(){
                         </div>
                     ))
                 ) }
+                <button className="refreshButton" onClick={fetchNetworkState}>Refresh Data</button>
             </div>
         </div>
     )
