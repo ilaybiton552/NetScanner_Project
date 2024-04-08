@@ -51,6 +51,13 @@ function Home({username}) {
   return (
     <div className='center'>
       <h1>Hello {username}</h1>
+      {Array.isArray(attacks) ? (attacks.map((attack) => (
+        <div>
+          <h1>{attack.attack_name}</h1>
+          <p>{attack.attack_description}</p>
+        </div>
+      ))) : (<p>Loading...</p>)}
+      
     </div>
 
   )
