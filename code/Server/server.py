@@ -209,6 +209,24 @@ def register():
     user.insert()
     return jsonify({'Message': 'User created successfully'})
     
+@app.route('/unblock_comp', methods=['POST'])
+def unblock_comp():
+    request_data = request.json
+    ip_address = request_data.get('ip_address')
+    mac_address = request_data.get('mac_address')
+    username = request_data.get('username')
+    mongo_db.BlockedComp.delete(mac_address, ip_address, username)
+    return jsonify({'Message': 'Computer unblocked'})
+
+@app.route('/get_blocked_comps', methods=['POST'])
+def get_block_comp():
+    request_data = request.json
+    username = request_data.get('username')
+    blocked_comps = mongo_db.BlockedComp.get_by_username(username)
+    blocked_comps_list = list(blocked_comps)
+    for blocked_comp in blocked_comps_list:
+        del blocked_comp['_id']
+    return jsonify(blocked_comps_list)
 
 def main():
     # Run the server on http://localhost:5000
