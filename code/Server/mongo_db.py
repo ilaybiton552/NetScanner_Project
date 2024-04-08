@@ -112,10 +112,19 @@ class ScanResult:
         
         def insert(self):
             blocked_comp.insert_one({'mac_address': self.mac_address, 'ip_address': self.ip_address, 'attack': self.attack, 'username': self.username})
-        
+
         @staticmethod
         def get_all():
             return blocked_comp.find()
+        
+        @staticmethod
+        def delete(mac_address, ip_address, username):
+            blocked_comp.delete_one({'mac_address': mac_address, 'ip_address': ip_address, 'username': username})
+
+        @staticmethod
+        def get_by_username(username):
+            return blocked_comp.find({'username': username})
+        
 #endregion
 
 def create_database():
