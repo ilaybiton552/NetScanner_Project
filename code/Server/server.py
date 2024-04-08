@@ -226,6 +226,7 @@ def get_block_comp():
     blocked_comps_list = list(blocked_comps)
     for blocked_comp in blocked_comps_list:
         del blocked_comp['_id']
+        
     return jsonify(blocked_comps_list)
 
 def main():
