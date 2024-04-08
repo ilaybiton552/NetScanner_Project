@@ -162,10 +162,11 @@ def get_all_attacks():
 @app.route('/all_scan_results', methods=['GET'])
 def get_all_scan_results():
     scan_results = mongo_db.ScanResult.get_all()
-    scan_results_dict = list(scan_results)
-    for scan_result in scan_results_dict:
+    scan_results_list= list(scan_results)
+    for scan_result in scan_results_list:
         del scan_result['_id']
-    return jsonify(scan_results_dict)
+    scan_results_list = scan_results_list.reverse()
+    return jsonify(scan_results_list)
 
 @app.route('/scan_results', methods=['POST'])
 def get_scan_results_by_username():
@@ -175,6 +176,7 @@ def get_scan_results_by_username():
         scan_results_list = list(scan_results)
         for scan_result in scan_results_list:
             del scan_result['_id']
+        scan_results_list = scan_results_list.reverse()
         return jsonify(scan_results_list)
     except Exception as e:
         print(e)
