@@ -13,6 +13,7 @@ import evil_twin_detector_terminal
 import mongo_db
 import notify
 import network_scan
+from datetime import datetime
 
 DNS_API = "https://networkcalc.com/api/dns/lookup/"
 SYN = 0x02
@@ -192,11 +193,15 @@ def handle_attack(packet, type):
     else:  # blocking ip address - error getting mac address
         subprocess.check_call([BLOCK_IP_SCRIPT, ip_address])
     
-    current_time = datetime.datetime.now()  # current time
-    current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
+    try:
 
-    mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()  # insert the attack
-    mongo_db.BlockedComp(mac_address, ip_address, type, sniffer.username).insert()  # insert the attacked computer
+        current_time = datetime.now()  # current time
+        current_network = subprocess.check_output([CURR_NET_SCRIPT]).decode()[0:-1]  # last char is \n
+
+        mongo_db.ScanResult(sniffer.username, type, current_time, mac_address, ip_address, current_network).insert()  # insert the attack
+        mongo_db.BlockedComp(mac_address, ip_address, type, sniffer.username).insert()  # insert the attacked computer
+    except Exception as ex:
+        print(ex)
 
 
 def handle_packet(packet):
