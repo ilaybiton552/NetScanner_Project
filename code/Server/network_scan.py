@@ -4,6 +4,8 @@ import netifaces
 import subprocess
 import urllib.request
 import csv
+import time
+from threading import Thread
 
 def download_oui_database(url, filename):
     urllib.request.urlretrieve(url, filename)
@@ -68,7 +70,7 @@ def get_self_mac_address():
     for line in mac_address.split('\n'):
         if 'ether' in line:
             return line.split(' ')[-3]
-
+        
 
 def scan_subnet(subnet, oui_dict):
     print(f"Scanning {subnet}...")
@@ -93,7 +95,6 @@ def scan_subnet(subnet, oui_dict):
     return computers
 
 
-
 def get_network_state():
     print("Starting the code...")
     url = 'http://standards-oui.ieee.org/oui/oui.csv'
@@ -105,3 +106,24 @@ def get_network_state():
     network = get_network(interface)
     computers = scan_subnet(network, oui_dict)
     return computers
+
+
+class NetworkState(Thread):
+    def __init__(self):
+        self.computers = []
+        super().__init__()
+
+    def run(self):
+        while True:
+            self.computers = get_network_state()
+            time.sleep(60)  # wait 60 seconds
+
+
+def start_network_state():
+    global net_stats
+    net_stats = NetworkState()
+    net_stats.start()
+
+
+def get_computers():
+    return net_stats.computers
