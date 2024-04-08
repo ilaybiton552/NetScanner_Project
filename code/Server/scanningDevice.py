@@ -26,6 +26,8 @@ TYPES = {1: 'A', 5: 'CNAME'}
 AAAA_DNS_TYPE = 28
 BLOCK_MAC_SCRIPT = "./block_mac.sh"
 BLOCK_IP_SCRIPT = "./block_ip.sh"
+UNBLOCK_MAC_SCRIPT = "./unblock_mac.sh"
+UNBLOCK_IP_SCRIPT = "./unblock_ip.sh"
 IPV4_REGEX = "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"
 NOTIFY_SCRIPT = "./notify.sh"
 CURR_NET_SCRIPT = "./get_network.sh"
@@ -564,3 +566,19 @@ def get_scan_state():
                                                  "smurf": sniffer.smurf, "evil_twin": sniffer.evil_twin}}
     except Exception:
         return {"scan": False}
+    
+
+def unblock_computer(ip, mac):
+    """
+    Unblocks a device
+    :param ip: the ip address of the device
+    :param mac: the mac address of the device
+    :return: None
+    """
+    try:
+        subprocess.check_call([UNBLOCK_MAC_SCRIPT, mac])
+    except Exception:
+        try:
+            subprocess.check_call([UNBLOCK_IP_SCRIPT, ip])
+        except Exception:
+            pass

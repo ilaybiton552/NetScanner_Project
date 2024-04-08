@@ -216,6 +216,7 @@ def unblock_comp():
     mac_address = request_data.get('mac_address')
     username = request_data.get('username')
     mongo_db.BlockedComp.delete(mac_address, ip_address, username)
+    scanningDevice.unblock_computer(ip_address, mac_address)
     return jsonify({'Message': 'Computer unblocked'})
 
 @app.route('/get_blocked_comps', methods=['POST'])
